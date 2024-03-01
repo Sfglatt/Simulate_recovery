@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r set Git}
 # usethis::create_from_github(
 #  "https://github.com/Sfglatt/Simulate-recovery.git",
-#  destdir = "C:/Users/sofel/OneDrive/Documents/Labs/Github/Simulate_recovery"
+#  destdir = "Github/Simulate_recovery"
 # )
 ```
 
@@ -20,7 +20,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r recode remove duplicates and merge}
 # datasets on OSF: 
 
-R_S1 <- read_xlsx("C:/Users/sofel/OneDrive/Documents/Labs/PASE-R Lab/RESST network/RESST_data_samples/Sample_1_osf_23.xlsx") # on OSF
+R_S1 <- read_xlsx("Sample_1.xlsx") # on OSF
 
 R_S2 <- read_xlsx("RESST_S2.xlsx") # the de-identified dataset is on OSF, however, I'm  using one with a 'worker ID column' that is not publicly available (to merge with sample 3)
 
