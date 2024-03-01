@@ -9,7 +9,55 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r Glauber dynamics function 1}
+```{r Glauber dynamics function 1 state}
+
+# This function simulates data at equilibrium with Glauber dynamics.
+
+# this function needs: 
+  # thresholds, which will be derived from Ising model 
+  # connectivity = adjacency matrix which will be derived from the Ising model
+  # Ntime = number of timepoints to simulate using glauber dynamics. change in the functions use
+  # Nsim = number of glauber dynamics simulations 
+  # beta = beta parameter Hamiltonian.
+  # Hamiltonian energy measure, which is defined as function(x,m,w) { - (((t(x)%*%w%*%x)/2) + (t(x)%*%m)) }
+
+Glauber_1 <- function(connectivity, thresholds, Ntime = 5000, beta = 1) {
+  
+  Nvar <- length(thresholds)
+  
+  # transform state
+  vector.one <- matrix(1, Nvar, 1)
+  transformed.thresholds <- 0.5 * thresholds + 0.25 * connectivity %*% vector.one
+  transformed.connectivity <- 0.25 * connectivity
+  
+  ham <- function(x, m, w) {
+    - (((t(x) %*% w %*% x) / 2) + (t(x) %*% m)) # hamiltonian
+  } 
+  
+  output.dat_eq <- matrix(0, Ntime, Nvar)
+
+  startvalue <- sample(c(-1, 1), Nvar, T)
+  x <- startvalue     # start vector 
+  
+  for (j in 1:Ntime) {
+    i = sample(1:Nvar, size = 1)  # Sample which node is going to be flipped 
+    x2 = x
+    x2[i] = x2[i] * -1            # Flip the node 
+    p <- 1 / (1 + exp(beta * (ham(x2, transformed.thresholds, transformed.connectivity) - 
+                                ham(x, transformed.thresholds, transformed.connectivity))))
+    if (runif(1) < p) x = x2       # update state
+    output.dat_eq[j, ] = x 
+  }
+  
+  ## transform data back #
+  output.binary_eq <<- 0.5 + 0.5 * output.dat_eq 
+  
+  return(list(equilibrium_states = output.binary_eq))
+}
+
+```
+
+```{r Glauber dynamics function 2 states}
 # This function simulates data at equilibrium AND with applied pertubation (defined in this function as momentary activation or deactivation of all symptoms for a single simulation)
 
 # for the glauber dynamics function, we need: 
@@ -20,7 +68,7 @@ knitr::opts_chunk$set(echo = TRUE)
   # beta = beta parameter Hamiltonian.
   # Hamiltonian energy measure, which is defined as function(x,m,w) { - (((t(x)%*%w%*%x)/2) + (t(x)%*%m)) }
 
-ResFunction <- function(connectivity, 
+Glauber_2 <- function(connectivity, 
                         thresholds, 
                         Ntime = 5000, 
                         Nsim = 1, 
