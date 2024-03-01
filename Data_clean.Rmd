@@ -285,3 +285,25 @@ sum(RESST_sim_lifetime_risk$Q47 >= 3) / length(RESST_sim_lifetime_risk$Q47) * 10
 
 ```
 
+```{r Prepare variables}
+# The personal recovery items range from 1 to 5: 
+
+# Does not describe me (1)
+# Describes me slightly well (2)
+# Describes me moderately well (3)
+# Describes me very well (4)
+# Describes me extremely well (5)
+
+### recode the items so that 1 and 2 = 0; 3, 4, 5 = 1. Items need to be binary for the planned analyses.
+
+RESST_sim_sui_di <- RESST_sim_sui %>%
+  mutate_at(vars(R1:R21), ~ifelse(. %in% c(1, 2), 0, 1))
+
+colSums(RESST_sim_sui_di[, paste0("R", 1:21)] == 1) # frequencies of 1's on items
+
+
+RESST_sim_lifetime_risk_di <- RESST_sim_lifetime_risk %>%
+  mutate_at(vars(R1:R21), ~ifelse(. %in% c(1, 2), 0, 1))
+```
+
+
