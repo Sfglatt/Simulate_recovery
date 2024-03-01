@@ -218,3 +218,577 @@ write.csv(Pertubations_sui, "Sui_data_output/DF_sui_perturbations.csv")
 # save(Pertubations_sui, file="DF_perturbations_sui_20k.Rdata")
 ```
 
+```{r S simulation plots}
+# equilibrium #
+ggplot(DF_simulations_sui, # load 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "", 
+       x = "Time points",
+       y = expression(paste("RESST symptoms - FSA"))) +
+  theme(
+    plot.title = element_text(size = 14, face="bold", hjust = 0.5),
+    axis.title = element_text(size=12, face = "bold"),
+    axis.text = element_text(size = 12, face = "bold")) 
+
+hist(DF_simulations_sui$Equilibrium,
+     col="black",
+     xlim=c(0,21),
+     breaks=seq(0,21),
+     main="",
+     xlab = expression(bold("Symptoms")),
+     ylab = expression(bold(paste("RESST symptoms - FSA"))))
+
+# perturbations #
+ggplot(DF_simulations_sui, aes(x = Timepoints, y = Perturbations)) + 
+  geom_line() +
+  theme_classic() +
+  geom_vline(xintercept = seq(from = 1000, to = Ntime -1, by=1000), color="pink", 
+             size=.7) +
+  labs(title = "", 
+       x = "Time points",
+       y = expression(paste("RESST symptoms - FSA"))) +
+  theme(
+    plot.title = element_text(size = 14, face="bold", hjust = 0.5),
+    axis.title = element_text(size=12, face = "bold"),
+    axis.text = element_text(size = 12, face = "bold")) 
+
+# plot perturbed time 2,000 - 3,000 (close up of full)
+ggplot(DF_simulations_sui, aes(x = Timepoints, y = Perturbations)) + 
+  geom_line() +
+  theme_classic() +
+  geom_vline(xintercept = seq(from = 1000, to = Ntime -1, by=1000), color="pink", 
+             size=.7) +
+  labs(title = "", 
+       x = "Time points",
+       y = expression(paste("RESST symptoms - FSA"))) +
+  theme(
+    plot.title = element_text(size = 14, face="bold", hjust = 0.5),
+    axis.title = element_text(size=12, face = "bold"),
+    axis.text = element_text(size = 12, face = "bold")) + scale_x_continuous(limits = c(2000, 3000))
+
+# plot perturbed time 1,000 - 2,000 (cloe up of full)
+ggplot(DF_simulations_sui, aes(x = Timepoints, y = Perturbations)) + 
+  geom_line() +
+  theme_classic() +
+  geom_vline(xintercept = seq(from = 1000, to = Ntime -1, by=1000), color="pink", 
+             size=.7) +
+  labs(title = "", 
+       x = "Time points",
+       y = expression(paste("RESST symptoms - FSA"))) +
+  theme(
+    plot.title = element_text(size = 14, face="bold", hjust = 0.5),
+    axis.title = element_text(size=12, face = "bold"),
+    axis.text = element_text(size = 12, face = "bold")) + scale_x_continuous(limits = c(1000, 2000))
+
+hist(DF_simulations_sui$Perturbations,
+     col="black",
+     xlim=c(0,21),
+     breaks=seq(0,21),
+     main="",
+     xlab = expression(bold("Symptoms")),
+     ylab = expression(bold(paste("RESST symptoms - FSA"))))
+```
+```{r S system activity preference}
+# connectivity_resst_sui_sim = RESST_sui_binary_res$weiadj 
+# thresholds_resst__sui_sim = RESST_sui_binary_res$thresholds 
+
+set.seed(123456)
+l1 <- make_2d_Isingland(thresholds = RESST_sui_binary_res$thresholds, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(l1)
+calculate_resilience(l1)
+# when the potential value is higher, the system is less stable and tends to move to more stable state. 
+
+# ggsave("./manuscript/original_network_resilience.png", plot(l1) + autolayer(calculate_resilience(l1)), width = 8, height = 6)
+```
+
+```{r S simulations INDIVIDUAL item manipulations)}
+
+# we are manipulating each symptom by 2 SD - to prefer to be more present, THEN, run at equilibrium with glaubers dynamics
+
+# I can't get a loop to work without incorporating the previous manipulation in the following one, so just doing them individually 
+
+amount_of_SDs_perturbation = 2
+
+# Manipulate item 1's threshold
+manipulated_thresholds_resst_sui_sim1 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim1[1] <- manipulated_thresholds_resst_sui_sim1[1] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+print(manipulated_thresholds_resst_sui_sim1) # .-1.64
+
+# Manipulate item 2's threshold
+manipulated_thresholds_resst_sui_sim2 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim2[2] <- manipulated_thresholds_resst_sui_sim2[2] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+print(manipulated_thresholds_resst_sui_sim2) # .70
+
+# Manipulate item 3's threshold
+manipulated_thresholds_resst_sui_sim3 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim3[3] <- manipulated_thresholds_resst_sui_sim3[3] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+print(manipulated_thresholds_resst_sui_sim3) # -.55
+
+# Manipulate item 4's threshold
+manipulated_thresholds_resst_sui_sim4 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim4[4] <- manipulated_thresholds_resst_sui_sim4[4] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+print(manipulated_thresholds_resst_sui_sim4) # -.11
+
+# Manipulate item 5's threshold
+manipulated_thresholds_resst_sui_sim5 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim5[5] <- manipulated_thresholds_resst_sui_sim5[5] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+print(manipulated_thresholds_resst_sui_sim5) # -.84
+
+# Manipulate item 6's threshold
+manipulated_thresholds_resst_sui_sim6 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim6[6] <- manipulated_thresholds_resst_sui_sim6[6] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+print(manipulated_thresholds_resst_sui_sim6) # -.009
+
+# Manipulate item 7's threshold
+manipulated_thresholds_resst_sui_sim7 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim7[7] <- manipulated_thresholds_resst_sui_sim7[7] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+print(manipulated_thresholds_resst_sui_sim7) # 0.71
+
+# Manipulate item 8's threshold
+manipulated_thresholds_resst_sui_sim8 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim8[8] <- manipulated_thresholds_resst_sui_sim8[8] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+print(manipulated_thresholds_resst_sui_sim8) # -1.45
+
+# Manipulate item 9's threshold
+manipulated_thresholds_resst_sui_sim9 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim9[9] <- manipulated_thresholds_resst_sui_sim9[9] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+print(manipulated_thresholds_resst_sui_sim9) # .40
+
+# Manipulate item 10's threshold
+manipulated_thresholds_resst_sui_sim10 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim10[10] <- manipulated_thresholds_resst_sui_sim10[10] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+print(manipulated_thresholds_resst_sui_sim10) # 1.18
+
+# Manipulate item 11's threshold
+manipulated_thresholds_resst_sui_sim11 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim11[11] <- manipulated_thresholds_resst_sui_sim11[11] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+print(manipulated_thresholds_resst_sui_sim11) # -2.5
+
+# Manipulate item 12's threshold
+manipulated_thresholds_resst_sui_sim12 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim12[12] <- manipulated_thresholds_resst_sui_sim12[12] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+print(manipulated_thresholds_resst_sui_sim12) # -.009
+
+# Manipulate item 13's threshold
+manipulated_thresholds_resst_sui_sim13 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim13[13] <- manipulated_thresholds_resst_sui_sim13[13] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+print(manipulated_thresholds_resst_sui_sim13) # -.74
+
+# Manipulate item 14's threshold
+manipulated_thresholds_resst_sui_sim14 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim14[14] <- manipulated_thresholds_resst_sui_sim14[14] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+print(manipulated_thresholds_resst_sui_sim14) # -1.27
+
+# Manipulate item 15's threshold
+manipulated_thresholds_resst_sui_sim15 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim15[15] <- manipulated_thresholds_resst_sui_sim15[15] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+print(manipulated_thresholds_resst_sui_sim15) # -.33
+
+# Manipulate item 16's threshold
+manipulated_thresholds_resst_sui_sim16 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim16[16] <- manipulated_thresholds_resst_sui_sim16[16] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+print(manipulated_thresholds_resst_sui_sim16) # -1.63
+
+# Manipulate item 17's threshold
+manipulated_thresholds_resst_sui_sim17 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim17[17] <- manipulated_thresholds_resst_sui_sim17[17] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+print(manipulated_thresholds_resst_sui_sim17) # -.30
+
+# Manipulate item 18's threshold
+manipulated_thresholds_resst_sui_sim18 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim18[18] <- manipulated_thresholds_resst_sui_sim18[18] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+print(manipulated_thresholds_resst_sui_sim18) # .70
+
+# Manipulate item 19's threshold
+manipulated_thresholds_resst_sui_sim19 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim19[19] <- manipulated_thresholds_resst_sui_sim19[19] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+print(manipulated_thresholds_resst_sui_sim19) # .81
+
+# Manipulate item 20's threshold
+manipulated_thresholds_resst_sui_sim20 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim20[20] <- manipulated_thresholds_resst_sui_sim20[20] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+
+print(manipulated_thresholds_resst_sui_sim20) # 1.16
+
+# Manipulate item 21's threshold
+manipulated_thresholds_resst_sui_sim21 <- thresholds_resst_sui_sim
+manipulated_thresholds_resst_sui_sim21[21] <- manipulated_thresholds_resst_sui_sim21[21] + amount_of_SDs_perturbation * sd(thresholds_resst_sui_sim)
+
+print(manipulated_thresholds_resst_sui_sim21) # .89
+
+
+# equilbrium with item 1 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim1, Ntime = 20000, beta = 1.5)
+
+Equilibrium_sui_1_manip <- output.binary_eq 
+Equilibrium_sui_1_manip
+stateEQ_sui_1_manip <- mean(apply(Equilibrium_sui_1_manip,1,sum)) 
+stateEQ_sui_1_manip # 7.9635
+stateEQ_sui_1_manip_sd <- sd(apply(Equilibrium_sui_1_manip,1,sum)) 
+stateEQ_sui_1_manip_sd #  6.359406
+
+# equilbrium with item 2 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim2, Ntime = 20000, beta = 1.5)
+
+Equilibrium_sui_2_manip <- output.binary_eq 
+Equilibrium_sui_2_manip
+stateEQ_sui_2_manip <- mean(apply(Equilibrium_sui_2_manip,1,sum)) 
+stateEQ_sui_2_manip # 7.6176
+stateEQ_sui_2_manip_sd <- sd(apply(Equilibrium_sui_2_manip,1,sum)) 
+stateEQ_sui_2_manip_sd # 4.866801
+
+# equilbrium with item 3 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim3, Ntime = 20000, beta = 1.5)
+
+Equilibrium_sui_3_manip <- output.binary_eq 
+Equilibrium_sui_3_manip
+stateEQ_sui_3_manip <- mean(apply(Equilibrium_sui_3_manip,1,sum)) 
+stateEQ_sui_3_manip # 10.1696
+stateEQ_sui_3_manip_sd <- sd(apply(Equilibrium_sui_3_manip,1,sum)) 
+stateEQ_sui_3_manip_sd # 6.134453
+
+# equilbrium with item 4 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim4, Ntime = 20000, beta = 1.5)
+
+Equilibrium_sui_4_manip <- output.binary_eq 
+Equilibrium_sui_4_manip
+stateEQ_sui_4_manip <- mean(apply(Equilibrium_sui_4_manip,1,sum)) 
+stateEQ_sui_4_manip # 10.1696
+stateEQ_sui_4_manip_sd <- sd(apply(Equilibrium_sui_4_manip,1,sum)) 
+stateEQ_sui_4_manip_sd # 6.134453
+
+# equilbrium with item 5 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim5, Ntime = 20000, beta = 1.5)
+
+Equilibrium_sui_5_manip <- output.binary_eq 
+Equilibrium_sui_5_manip
+stateEQ_sui_5_manip <- mean(apply(Equilibrium_sui_5_manip,1,sum)) 
+stateEQ_sui_5_manip # 8.83975
+stateEQ_sui_5_manip_sd <- sd(apply(Equilibrium_sui_5_manip,1,sum)) 
+stateEQ_sui_5_manip_sd # 6.337845
+
+# equilbrium with item 6 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim6, Ntime = 20000, beta = 1.5)
+
+Equilibrium_sui_6_manip <- output.binary_eq 
+Equilibrium_sui_6_manip
+stateEQ_sui_6_manip <- mean(apply(Equilibrium_sui_6_manip,1,sum)) 
+stateEQ_sui_6_manip # 9.3531
+stateEQ_sui_6_manip_sd <- sd(apply(Equilibrium_sui_6_manip,1,sum)) 
+stateEQ_sui_6_manip_sd # 6.317437
+
+# equilbrium with item 7 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim7, Ntime = 20000, beta = 1.5)
+
+Equilibrium_sui_7_manip <- output.binary_eq 
+Equilibrium_sui_7_manip
+stateEQ_sui_7_manip <- mean(apply(Equilibrium_sui_7_manip,1,sum)) 
+stateEQ_sui_7_manip # 10.8352
+stateEQ_sui_7_manip_sd <- sd(apply(Equilibrium_sui_7_manip,1,sum)) 
+stateEQ_sui_7_manip_sd # 6.554517
+
+# equilbrium with item 8 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim8, Ntime = 20000, beta = 1.5)
+
+Equilibrium_sui_8_manip <- output.binary_eq 
+Equilibrium_sui_8_manip
+stateEQ_sui_8_manip <- mean(apply(Equilibrium_sui_8_manip,1,sum)) 
+stateEQ_sui_8_manip # 11.72295
+stateEQ_sui_8_manip_sd <- sd(apply(Equilibrium_sui_8_manip,1,sum)) 
+stateEQ_sui_8_manip_sd # 6.169975
+
+# equilbrium with item 9 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim9, Ntime = 20000, beta = 1.5)
+
+Equilibrium_sui_9_manip <- output.binary_eq 
+Equilibrium_sui_9_manip
+stateEQ_sui_9_manip <- mean(apply(Equilibrium_sui_9_manip,1,sum)) 
+stateEQ_sui_9_manip # 8.79185
+stateEQ_sui_9_manip_sd <- sd(apply(Equilibrium_sui_9_manip,1,sum)) 
+stateEQ_sui_9_manip_sd # 5.339733
+
+# equilbrium with item 10 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim10, Ntime = 20000, beta = 1.5)
+
+Equilibrium_sui_10_manip <- output.binary_eq 
+Equilibrium_sui_10_manip
+stateEQ_sui_10_manip <- mean(apply(Equilibrium_sui_10_manip,1,sum)) 
+stateEQ_sui_10_manip # 7.86425
+stateEQ_sui_10_manip_sd <- sd(apply(Equilibrium_sui_10_manip,1,sum)) 
+stateEQ_sui_10_manip_sd # 5.320389
+
+# equilbrium with item 11 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim11, Ntime = 20000, beta = 1.5) 
+
+Equilibrium_sui_11_manip <- output.binary_eq 
+Equilibrium_sui_11_manip
+stateEQ_sui_11_manip <- mean(apply(Equilibrium_sui_11_manip,1,sum)) 
+stateEQ_sui_11_manip # 10.71545
+stateEQ_sui_11_manip_sd <- sd(apply(Equilibrium_sui_11_manip,1,sum)) 
+stateEQ_sui_11_manip_sd # 6.547062
+
+# equilbrium with item 12 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim12, Ntime = 20000, beta = 1.5) 
+
+Equilibrium_sui_12_manip <- output.binary_eq 
+Equilibrium_sui_12_manip
+stateEQ_sui_12_manip <- mean(apply(Equilibrium_sui_12_manip,1,sum)) 
+stateEQ_sui_12_manip # 10.4123
+stateEQ_sui_12_manip_sd <- sd(apply(Equilibrium_sui_12_manip,1,sum)) 
+stateEQ_sui_12_manip_sd # 6.300991
+
+# equilbrium with item 13 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim13, Ntime = 20000, beta = 1.5) 
+
+Equilibrium_sui_13_manip <- output.binary_eq 
+Equilibrium_sui_13_manip
+stateEQ_sui_13_manip <- mean(apply(Equilibrium_sui_13_manip,1,sum)) 
+stateEQ_sui_13_manip # 9.84785
+stateEQ_sui_13_manip_sd <- sd(apply(Equilibrium_sui_13_manip,1,sum)) 
+stateEQ_sui_13_manip_sd # 6.030018
+
+# equilbrium with item 14 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim14, Ntime = 20000, beta = 1.5)
+
+Equilibrium_sui_14_manip <- output.binary_eq 
+Equilibrium_sui_14_manip
+stateEQ_sui_14_manip <- mean(apply(Equilibrium_sui_14_manip,1,sum)) 
+stateEQ_sui_14_manip # 9.63855
+stateEQ_sui_14_manip_sd <- sd(apply(Equilibrium_sui_14_manip,1,sum)) 
+stateEQ_sui_14_manip_sd # 6.17593
+
+# equilbrium with item 15 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim15, Ntime = 20000, beta = 1.5) 
+
+Equilibrium_sui_15_manip <- output.binary_eq 
+Equilibrium_sui_15_manip
+stateEQ_sui_15_manip <- mean(apply(Equilibrium_sui_15_manip,1,sum)) 
+stateEQ_sui_15_manip # 10.15005
+stateEQ_sui_15_manip_sd <- sd(apply(Equilibrium_sui_15_manip,1,sum)) 
+stateEQ_sui_15_manip_sd # 5.520947
+
+# equilbrium with item 16 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim16, Ntime = 20000, beta = 1.5) 
+
+Equilibrium_sui_16_manip <- output.binary_eq 
+Equilibrium_sui_16_manip
+stateEQ_sui_16_manip <- mean(apply(Equilibrium_sui_16_manip,1,sum)) 
+stateEQ_sui_16_manip # 9.2583
+stateEQ_sui_16_manip_sd <- sd(apply(Equilibrium_sui_16_manip,1,sum)) 
+stateEQ_sui_16_manip_sd # 5.179124
+
+# equilbrium with item 17 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim17, Ntime = 20000, beta = 1.5) 
+
+
+Equilibrium_sui_17_manip <- output.binary_eq 
+Equilibrium_sui_17_manip
+stateEQ_sui_17_manip <- mean(apply(Equilibrium_sui_17_manip,1,sum)) 
+stateEQ_sui_17_manip # 10.8947
+stateEQ_sui_17_manip_sd <- sd(apply(Equilibrium_sui_17_manip,1,sum)) 
+stateEQ_sui_17_manip_sd # 5.571137
+
+# equilbrium with item 18 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim18, Ntime = 20000, beta = 1.5) 
+
+Equilibrium_sui_18_manip <- output.binary_eq 
+Equilibrium_sui_18_manip
+stateEQ_sui_18_manip <- mean(apply(Equilibrium_sui_18_manip,1,sum)) 
+stateEQ_sui_18_manip # 7.94855
+stateEQ_sui_18_manip_sd <- sd(apply(Equilibrium_sui_18_manip,1,sum)) 
+stateEQ_sui_18_manip_sd # 5.375309
+
+# equilbrium with item 19 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim19, Ntime = 20000, beta = 1.5) 
+
+Equilibrium_sui_19_manip <- output.binary_eq 
+Equilibrium_sui_19_manip
+stateEQ_sui_19_manip <- mean(apply(Equilibrium_sui_19_manip,1,sum)) 
+stateEQ_sui_19_manip # 7.88185
+stateEQ_sui_19_manip_sd <- sd(apply(Equilibrium_sui_19_manip,1,sum)) 
+stateEQ_sui_19_manip_sd # 5.502691
+
+# equilbrium with item 20 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim20, Ntime = 20000, beta = 1.5)
+
+Equilibrium_sui_20_manip <- output.binary_eq 
+Equilibrium_sui_20_manip
+stateEQ_sui_20_manip <- mean(apply(Equilibrium_sui_20_manip,1,sum)) 
+stateEQ_sui_20_manip # 7.4975
+stateEQ_sui_20_manip_sd <- sd(apply(Equilibrium_sui_20_manip,1,sum)) 
+stateEQ_sui_20_manip_sd # 5.254358
+
+# equilbrium with item 21 manipulated #
+set.seed(123456)
+Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim21, Ntime = 20000, beta = 1.5)
+
+Equilibrium_sui_21_manip <- output.binary_eq 
+Equilibrium_sui_21_manip
+stateEQ_sui_21_manip <- mean(apply(Equilibrium_sui_21_manip,1,sum)) 
+stateEQ_sui_21_manip # 7.37835
+stateEQ_sui_21_manip_sd <- sd(apply(Equilibrium_sui_21_manip,1,sum)) 
+stateEQ_sui_21_manip_sd # 5.036861
+
+## dataframes with totals for each glauber simulation ##
+
+DF_simulations_sui_1m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_1_manip,1,sum)) 
+
+DF_simulations_sui_2m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_2_manip,1,sum)) 
+
+DF_simulations_sui_3m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_3_manip,1,sum)) 
+
+DF_simulations_sui_4m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_4_manip,1,sum)) 
+
+DF_simulations_sui_5m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_5_manip,1,sum)) 
+
+DF_simulations_sui_6m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_6_manip,1,sum)) 
+
+DF_simulations_sui_7m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_7_manip,1,sum)) 
+
+DF_simulations_sui_8m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_8_manip,1,sum)) 
+
+DF_simulations_sui_9m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_9_manip,1,sum)) 
+
+DF_simulations_sui_10m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_10_manip,1,sum)) 
+
+DF_simulations_sui_11m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_11_manip,1,sum)) 
+
+DF_simulations_sui_12m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_12_manip,1,sum)) 
+
+DF_simulations_sui_13m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_13_manip,1,sum)) 
+
+DF_simulations_sui_14m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_14_manip,1,sum)) 
+
+DF_simulations_sui_15m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_15_manip,1,sum)) 
+
+DF_simulations_sui_16m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_16_manip,1,sum)) 
+
+DF_simulations_sui_17m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_17_manip,1,sum)) 
+
+DF_simulations_sui_18m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_18_manip,1,sum)) 
+
+DF_simulations_sui_19m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_19_manip,1,sum)) 
+
+DF_simulations_sui_20m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_20_manip,1,sum)) 
+
+DF_simulations_sui_21m <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui_21_manip,1,sum))
+
+# IQR, mean, range
+summ_1m_sui <- summary(DF_simulations_sui_1m$Equilibrium)
+summ_2m_sui <- summary(DF_simulations_sui_2m$Equilibrium)
+summ_3m_sui <- summary(DF_simulations_sui_3m$Equilibrium)
+summ_4m_sui <- summary(DF_simulations_sui_4m$Equilibrium)
+summ_5m_sui <- summary(DF_simulations_sui_5m$Equilibrium)
+summ_6m_sui <- summary(DF_simulations_sui_6m$Equilibrium)
+summ_7m_sui <- summary(DF_simulations_sui_7m$Equilibrium)
+summ_8m_sui <- summary(DF_simulations_sui_8m$Equilibrium)
+summ_9m_sui <- summary(DF_simulations_sui_9m$Equilibrium)
+summ_10m_sui <- summary(DF_simulations_sui_10m$Equilibrium)
+summ_11m_sui <- summary(DF_simulations_sui_11m$Equilibrium)
+summ_12m_sui <- summary(DF_simulations_sui_12m$Equilibrium)
+summ_13m_sui <- summary(DF_simulations_sui_13m$Equilibrium)
+summ_14m_sui <- summary(DF_simulations_sui_14m$Equilibrium)
+summ_15m_sui <- summary(DF_simulations_sui_15m$Equilibrium)
+summ_16m_sui <- summary(DF_simulations_sui_16m$Equilibrium)
+summ_17m_sui <- summary(DF_simulations_sui_17m$Equilibrium)
+summ_18m_sui <- summary(DF_simulations_sui_18m$Equilibrium)
+summ_19m_sui <- summary(DF_simulations_sui_19m$Equilibrium)
+summ_20m_sui <- summary(DF_simulations_sui_20m$Equilibrium)
+summ_21m_sui <- summary(DF_simulations_sui_21m$Equilibrium)
+
+# Save csv files 
+# raw simulated data
+write.csv(Equilibrium_sui_1_manip, "Sui_data_output/DF_sui_equilibrium_1_manipulated.csv")
+write.csv(Equilibrium_sui_2_manip, "Sui_data_output/DF_sui_equilibrium_2_manipulated.csv")
+write.csv(Equilibrium_sui_3_manip, "Sui_data_output/DF_sui_equilibrium_3_manipulated.csv")
+write.csv(Equilibrium_sui_4_manip, "Sui_data_output/DF_sui_equilibrium_4_manipulated.csv")
+write.csv(Equilibrium_sui_5_manip, "Sui_data_output/DF_sui_equilibrium_5_manipulated.csv")
+write.csv(Equilibrium_sui_6_manip, "Sui_data_output/DF_sui_equilibrium_6_manipulated.csv")
+write.csv(Equilibrium_sui_7_manip, "Sui_data_output/DF_sui_equilibrium_7_manipulated.csv")
+write.csv(Equilibrium_sui_8_manip, "Sui_data_output/DF_sui_equilibrium_8_manipulated.csv")
+write.csv(Equilibrium_sui_9_manip, "Sui_data_output/DF_sui_equilibrium_9_manipulated.csv")
+write.csv(Equilibrium_sui_10_manip, "Sui_data_output/DF_sui_equilibrium_10_manipulated.csv")
+write.csv(Equilibrium_sui_11_manip, "Sui_data_output/DF_sui_equilibrium_11_manipulated.csv")
+write.csv(Equilibrium_sui_12_manip, "Sui_data_output/DF_sui_equilibrium_12_manipulated.csv")
+write.csv(Equilibrium_sui_13_manip, "Sui_data_output/DF_sui_equilibrium_13_manipulated.csv")
+write.csv(Equilibrium_sui_14_manip, "Sui_data_output/DF_sui_equilibrium_14_manipulated.csv")
+write.csv(Equilibrium_sui_15_manip, "Sui_data_output/DF_sui_equilibrium_15_manipulated.csv")
+write.csv(Equilibrium_sui_16_manip, "Sui_data_output/DF_sui_equilibrium_16_manipulated.csv")
+write.csv(Equilibrium_sui_17_manip, "Sui_data_output/DF_sui_equilibrium_17_manipulated.csv")
+write.csv(Equilibrium_sui_18_manip, "Sui_data_output/DF_sui_equilibrium_18_manipulated.csv")
+write.csv(Equilibrium_sui_19_manip, "Sui_data_output/DF_sui_equilibrium_19_manipulated.csv")
+write.csv(Equilibrium_sui_20_manip, "Sui_data_output/DF_sui_equilibrium_20_manipulated.csv")
+write.csv(Equilibrium_sui_21_manip, "Sui_data_output/DF_sui_equilibrium_21_manipulated.csv")
+# totals
+write.csv(DF_simulations_sui_1m, "Sui_data_output/DF_sui_simulations_1_manipulated.csv")
+write.csv(DF_simulations_sui_2m, "Sui_data_output/DF_sui_simulations_2_manipulated.csv")
+write.csv(DF_simulations_sui_3m, "Sui_data_output/DF_sui_simulations_3_manipulated.csv")
+write.csv(DF_simulations_sui_4m, "Sui_data_output/DF_sui_simulations_4_manipulated.csv")
+write.csv(DF_simulations_sui_5m, "Sui_data_output/DF_sui_simulations_5_manipulated.csv")
+write.csv(DF_simulations_sui_6m, "Sui_data_output/DF_sui_simulations_6_manipulated.csv")
+write.csv(DF_simulations_sui_7m, "Sui_data_output/DF_sui_simulations_7_manipulated.csv")
+write.csv(DF_simulations_sui_8m, "Sui_data_output/DF_sui_simulations_8_manipulated.csv")
+write.csv(DF_simulations_sui_9m, "Sui_data_output/DF_sui_simulations_9_manipulated.csv")
+write.csv(DF_simulations_sui_10m, "Sui_data_output/DF_sui_simulations_10_manipulated.csv")
+write.csv(DF_simulations_sui_11m, "Sui_data_output/DF_sui_simulations_11_manipulated.csv")
+write.csv(DF_simulations_sui_12m, "Sui_data_output/DF_sui_simulations_12_manipulated.csv")
+write.csv(DF_simulations_sui_13m, "Sui_data_output/DF_sui_simulations_13_manipulated.csv")
+write.csv(DF_simulations_sui_14m, "Sui_data_output/DF_sui_simulations_14_manipulated.csv")
+write.csv(DF_simulations_sui_15m, "Sui_data_output/DF_sui_simulations_15_manipulated.csv")
+write.csv(DF_simulations_sui_16m, "Sui_data_output/DF_sui_simulations_16_manipulated.csv")
+write.csv(DF_simulations_sui_17m, "Sui_data_output/DF_sui_simulations_17_manipulated.csv")
+write.csv(DF_simulations_sui_18m, "Sui_data_output/DF_sui_simulations_18_manipulated.csv")
+write.csv(DF_simulations_sui_19m, "Sui_data_output/DF_sui_simulations_19_manipulated.csv")
+write.csv(DF_simulations_sui_20m, "Sui_data_output/DF_sui_simulations_20_manipulated.csv")
+write.csv(DF_simulations_sui_21m, "Sui_data_output/DF_sui_simulations_21_manipulated.csv")
+
+glimpse(DF_simulations_sui_21m)
+```
+
