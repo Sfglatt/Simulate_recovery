@@ -36,7 +36,7 @@ RESST_sui_binary <- dplyr::select(RESST_sim_sui_di, # binary vars
                               R21,
                               )
 
-# write.csv(RESST_sui_binary, 'C:\\Users\\sofel\\OneDrive\\Documents\\Labs\\PASE-R Lab\\RESST network\\Simulations_FSA\\FSA_dataset_274.csv') # excel with our final dataset
+# write.csv(RESST_sui_binary, 'FSA_dataset_274.csv') # csv with our final dataset
 
 nodeNames = c( "R1_di","R2_di", "R3_di","R4_di", "R5_di", "R6_di","R7_di", "R8_di", "R9_di","R10_di", "R11_di","R12_di","R13_di","R14_di","R15_di","R16_di", "R17_di", "R18_di","R19_di", "R20_di", "R21_di")
 ```
@@ -62,7 +62,7 @@ thresholds_resst_sui_sim = RESST_sui_binary_res$thresholds
 
 DF_ising_connectivities <- as.data.frame(connectivity_resst_sui_sim)
 
-# write_xlsx(DF_ising_connectivities, 'C:\\Users\\sofel\\OneDrive\\Documents\\Labs\\PASE-R Lab\\RESST network\\Simulations_FSA\\DF_ising_connectivities.xlsx') # excel with ising model connectivities 
+# write_xlsx(DF_ising_connectivities, 'DF_ising_connectivities.xlsx') # excel with ising model connectivities 
 ## this saved our connectivies as an excel
 
 # save(DF_ising_connectivities, file="DF_ising_connectivities.Rdata") # Rdata file to directly import to R
@@ -72,7 +72,7 @@ DF_ising_connectivities <- as.data.frame(connectivity_resst_sui_sim)
 
 DF_ising_thresholds <- as.data.frame(thresholds_resst_sui_sim)
 
-# write_xlsx(DF_ising_thresholds, 'C:\\Users\\sofel\\OneDrive\\Documents\\Labs\\PASE-R Lab\\RESST network\\Simulations_FSA\\DF_ising_thresholds.xlsx') # excel with ising model feature thresholds
+# write_xlsx(DF_ising_thresholds, 'DF_ising_thresholds.xlsx') # excel with ising model feature thresholds
 ## this saved our thresholds as an excel
 
 # save(DF_ising_thresholds, file="DF_ising_thresholds.Rdata") # Rdata file to directly import to R
