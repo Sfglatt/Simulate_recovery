@@ -9,6 +9,35 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r packages}
+if (!require("bootnet")) {install.packages("bootnet"); require("bootnet")}
+if (!require("cowplot")) {install.packages("cowplot"); require("cowplot")}
+if (!require("dplyr")) {install.packages("dplyr"); require("dplyr")}
+if (!require("effectsize")) {install.packages("effectsize"); require("effectsize")} 
+if (!require("EGAnet")) {install.packages("EGAnet"); require("EGAnet")} 
+if (!require("ggplot2")) {install.packages("ggplot2"); require("ggplot2")}
+if (!require("ggpubr")) {install.packages("ggpubr"); require("ggpubr")}
+if (!require("ggridges")) {install.packages("ggridges"); require("ggridges")}
+if (!require("gridExtra")) {install.packages("gridExtra"); require("gridExtra")}
+if (!require("IsingFit")) {install.packages("IsingFit"); require("IsingFit")}
+if (!require("Isinglandr")) {install.packages("Isinglandr"); require("Isinglandr")}
+if (!require("knitr")) {install.packages("knitr"); require("knitr")}
+if (!require("lsr")) {install.packages("lsr"); require("lsr")}
+if (!require("psych")) {install.packages("psych"); require("psych")}
+if (!require("pwr")) {install.packages("pwr"); require("pwr")}
+if (!require("qgraph")) {install.packages("qgraph"); require("qgraph")}
+if (!require("RColorBrewer")) {install.packages("RColorBrewer"); require("RColorBrewer")} 
+if (!require("rcompanion")) {install.packages("rcompanion"); require("rcompanion")} 
+if (!require("readxl")) {install.packages("readxl"); require("readxl")}
+if (!require("remotes")) {install.packages("remotes"); require("remotes")}
+if (!require("Rmisc")) {install.packages("Rmisc"); require("Rmisc")}
+if (!require("rstatix")) {install.packages("rstatix"); require("rstatix")} 
+if (!require("sm")) {install.packages("sm"); require("sm")}
+if (!require("tidyverse")) {install.packages("tidyverse"); require("tidyverse")}
+if (!require("viridis")) {install.packages("viridis"); require("viridis")} 
+if (!require("writexl")) {install.packages("writexl"); require("writexl")} 
+```
+
 ### current suicide group ###
 
 ```{r S Isolate variables}
@@ -36,7 +65,7 @@ RESST_sui_binary <- dplyr::select(RESST_sim_sui_di, # binary vars
                               R21,
                               )
 
-# write.csv(RESST_sui_binary, 'FSA_dataset_274.csv') # csv with our final dataset
+write.csv(RESST_sui_binary, 'Sui_data_output/DF_sui_data_274.csv') # csv with our final dataset
 
 nodeNames = c( "R1_di","R2_di", "R3_di","R4_di", "R5_di", "R6_di","R7_di", "R8_di", "R9_di","R10_di", "R11_di","R12_di","R13_di","R14_di","R15_di","R16_di", "R17_di", "R18_di","R19_di", "R20_di", "R21_di")
 ```
@@ -62,7 +91,7 @@ thresholds_resst_sui_sim = RESST_sui_binary_res$thresholds
 
 DF_ising_connectivities <- as.data.frame(connectivity_resst_sui_sim)
 
-# write_xlsx(DF_ising_connectivities, 'DF_ising_connectivities.xlsx') # excel with ising model connectivities 
+write.csv(DF_ising_connectivities, 'Sui_data_output/DF_sui_ising_connectivities.csv') # csv with ising model connectivities 
 ## this saved our connectivies as an excel
 
 # save(DF_ising_connectivities, file="DF_ising_connectivities.Rdata") # Rdata file to directly import to R
@@ -72,17 +101,16 @@ DF_ising_connectivities <- as.data.frame(connectivity_resst_sui_sim)
 
 DF_ising_thresholds <- as.data.frame(thresholds_resst_sui_sim)
 
-# write_xlsx(DF_ising_thresholds, 'DF_ising_thresholds.xlsx') # excel with ising model feature thresholds
+write.csv(DF_ising_thresholds, 'Sui_data_output/DF_sui_ising_thresholds.csv') # excel with ising model feature thresholds
 ## this saved our thresholds as an excel
 
 # save(DF_ising_thresholds, file="DF_ising_thresholds.Rdata") # Rdata file to directly import to R
 ## this saved our thresholds as Rdata
 
 # save image of ising model
-pdf("sim_sui_base_ising", width=10, height=10)
-plot(sim_sui_base_ising)
-
-dev.off()
+# pdf("sim_sui_base_ising", width=10, height=10)
+# plot(sim_sui_base_ising)
+# dev.off()
 
 # view 
 DF_ising_connectivities
@@ -93,7 +121,7 @@ DF_ising_thresholds
 set.seed(123456)
 Ntime = 20000 # 20,000 time points to simulate
 
-ResFunction(connectivity_resst_sui_sim, thresholds_resst_sui_sim, Ntime, beta = 1.5)
+Glauber_2(connectivity_resst_sui_sim, thresholds_resst_sui_sim, Ntime, beta = 1.5)
 Equilibrium_sui <- output.binary_eq 
 Pertubations_sui <- output.binary_pert
 stateEQ_sui <- mean(apply(Equilibrium_sui,1,sum)) # mean sum of active symptoms at equilibrium 
@@ -176,17 +204,17 @@ ggplot(data = DF_simulations_sui) +
 ## save Rdata/excel dataframes ##
 
 # active node totals at equilibrium and with perturbations
-write_xlsx(DF_simulations_sui, "DF_simulations_sui_20k.xlsx") 
-save(DF_simulations_sui, file="DF_simulations_sui_20k.Rdata")
+write.csv(DF_simulations_sui, "Sui_data_output/DF_sui_simulations.csv") 
+# save(DF_simulations_sui, file="DF_simulations_sui_20k.Rdata")
 
 # raw simulated data at equilibrium (n = 20,000 for 21 variables)
 Equilibrium_sui <- as.data.frame(Equilibrium_sui)
-write_xlsx(Equilibrium_sui, "DF_equilibrium_sui_20k.xlsx")
-save(Equilibrium_sui, file ="DF_equilibrium_sui_20k.Rdata")
+write.csv(Equilibrium_sui, "Sui_data_output/DF_sui_equilibrium.csv")
+# save(Equilibrium_sui, file ="DF_equilibrium_sui_20k.Rdata")
 
 # raw simulated data with perturbations (n = 20,000 for 21 variables)
 Pertubations_sui <- as.data.frame(Pertubations_sui)
-write_xlsx(Pertubations_sui, "DF_perturbations_sui_20k.xlsx")
-save(Pertubations_sui, file="DF_perturbations_sui_20k.Rdata")
+write.csv(Pertubations_sui, "Sui_data_output/DF_sui_perturbations.csv")
+# save(Pertubations_sui, file="DF_perturbations_sui_20k.Rdata")
 ```
 
