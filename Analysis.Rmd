@@ -135,8 +135,8 @@ summary(DF_subset_1_2k) # doing this for the perturbed response from 1000-20000
 Pertubations_sui_1_2k <- Pertubations_sui[1000:2000, ]
 Pertubations_PERT_sui_1_2k_mean <- mean(apply(Pertubations_sui_1_2k,1,sum)) 
 Pertubations_PERT_sui_1_2k_sd <- sd(apply(Pertubations_sui_1_2k,1,sum)) 
-Pertubations_PERT_sui_1_2k_mean # mean 
-Pertubations_PERT_sui_1_2k_sd # sd
+Pertubations_PERT_sui_1_2k_mean # mean =  13.22378
+Pertubations_PERT_sui_1_2k_sd # SD = 7.193739
 
 DF_subset_2_3k <- subset(DF_simulations_sui, Timepoints >= 2000 & Timepoints <= 3000)
 summary(DF_subset_2_3k) # look at one period of pertubation. doing this for the perturbed response from 2000-3000
@@ -150,8 +150,8 @@ summary(DF_subset_2_3k) # look at one period of pertubation. doing this for the 
 Pertubations_sui_2_3k <- Pertubations_sui[2000:3000, ]
 Pertubations_PERT_sui_2_3k_mean <- mean(apply(Pertubations_sui_2_3k,1,sum)) 
 Pertubations_PERT_sui_2_3k_sd <- sd(apply(Pertubations_sui_2_3k,1,sum)) 
-Pertubations_PERT_sui_2_3k_mean 
-Pertubations_PERT_sui_2_3k_sd 
+Pertubations_PERT_sui_2_3k_mean # mean = 15.51349 
+Pertubations_PERT_sui_2_3k_sd # SD 2.593852
 
 # plot density (active sum density) at equilibrium and with perturbation
 
@@ -172,5 +172,21 @@ ggplot(data = DF_simulations_sui) +
         panel.grid.major = element_line(color = "grey", linetype = "dashed"),
         panel.grid.minor = element_line(color = "grey", linetype = "dashed"),
         text=element_text(size = 14,  family = "serif"))
+
+## save Rdata/excel dataframes ##
+
+# active node totals at equilibrium and with perturbations
+write_xlsx(DF_simulations_sui, "DF_simulations_sui_20k.xlsx") 
+save(DF_simulations_sui, file="DF_simulations_sui_20k.Rdata")
+
+# raw simulated data at equilibrium (n = 20,000 for 21 variables)
+Equilibrium_sui <- as.data.frame(Equilibrium_sui)
+write_xlsx(Equilibrium_sui, "DF_equilibrium_sui_20k.xlsx")
+save(Equilibrium_sui, file ="DF_equilibrium_sui_20k.Rdata")
+
+# raw simulated data with perturbations (n = 20,000 for 21 variables)
+Pertubations_sui <- as.data.frame(Pertubations_sui)
+write_xlsx(Pertubations_sui, "DF_perturbations_sui_20k.xlsx")
+save(Pertubations_sui, file="DF_perturbations_sui_20k.Rdata")
 ```
 
