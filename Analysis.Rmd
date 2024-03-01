@@ -792,3 +792,64 @@ write.csv(DF_simulations_sui_21m, "Sui_data_output/DF_sui_simulations_21_manipul
 glimpse(DF_simulations_sui_21m)
 ```
 
+```{r  S simulations INDIVIDUAL item table desc}
+
+summaries <- list(summ_1m_sui, summ_2m_sui, summ_3m_sui, summ_4m_sui, summ_5m_sui, summ_6m_sui,
+                  summ_7m_sui, summ_8m_sui, summ_9m_sui, summ_10m_sui, summ_11m_sui, summ_12m_sui,
+                  summ_13m_sui, summ_14m_sui, summ_15m_sui, summ_16m_sui, summ_17m_sui, summ_18m_sui,
+                  summ_19m_sui, summ_20m_sui, summ_21m_sui)
+
+means <- c(stateEQ_sui_1_manip, stateEQ_sui_2_manip, stateEQ_sui_3_manip, stateEQ_sui_4_manip,
+           stateEQ_sui_5_manip, stateEQ_sui_6_manip, stateEQ_sui_7_manip, stateEQ_sui_8_manip,
+           stateEQ_sui_9_manip, stateEQ_sui_10_manip, stateEQ_sui_11_manip, stateEQ_sui_12_manip,
+           stateEQ_sui_13_manip, stateEQ_sui_14_manip, stateEQ_sui_15_manip, stateEQ_sui_16_manip,
+           stateEQ_sui_17_manip, stateEQ_sui_18_manip, stateEQ_sui_19_manip, stateEQ_sui_20_manip,
+           stateEQ_sui_21_manip)
+
+sds <- c(stateEQ_sui_1_manip_sd, stateEQ_sui_2_manip_sd, stateEQ_sui_3_manip_sd, stateEQ_sui_4_manip_sd,
+         stateEQ_sui_5_manip_sd, stateEQ_sui_6_manip_sd, stateEQ_sui_7_manip_sd, stateEQ_sui_8_manip_sd,
+         stateEQ_sui_9_manip_sd, stateEQ_sui_10_manip_sd, stateEQ_sui_11_manip_sd, stateEQ_sui_12_manip_sd,
+         stateEQ_sui_13_manip_sd, stateEQ_sui_14_manip_sd, stateEQ_sui_15_manip_sd, stateEQ_sui_16_manip_sd,
+         stateEQ_sui_17_manip_sd, stateEQ_sui_18_manip_sd, stateEQ_sui_19_manip_sd, stateEQ_sui_20_manip_sd,
+         stateEQ_sui_21_manip_sd)
+
+medians <- sapply(summaries, function(x) x[3])
+ranges <- sapply(summaries, function(x) x[6] - x[1])
+iqr <- sapply(summaries, function(x) x[5] - x[2])
+q1 <- sapply(summaries, function(x) x[2])
+q3 <- sapply(summaries, function(x) x[5])
+
+data_means_sds <- data.frame(Item = 1:21, Mean = means, SD = sds)
+
+data_summary <- data.frame(Item = 1:21, Median = medians, Range = ranges, IQR = iqr, Q1 = q1, Q3 = q3)
+
+table_desc_sui <- merge(data_means_sds, data_summary, by = "Item")
+
+print(table_desc_sui)
+
+# plot density (active sum density) at each equilibrium items' manipulation
+# List of data frames
+df_list <- list(DF_simulations_sui_1m, DF_simulations_sui_2m, DF_simulations_sui_3m, DF_simulations_sui_4m, DF_simulations_sui_5m, DF_simulations_sui_6m, DF_simulations_sui_7m, DF_simulations_sui_8m, DF_simulations_sui_9m, DF_simulations_sui_10m, DF_simulations_sui_11m, DF_simulations_sui_12m, DF_simulations_sui_13m, DF_simulations_sui_14m, DF_simulations_sui_15m, DF_simulations_sui_16m, DF_simulations_sui_17m, DF_simulations_sui_18m, DF_simulations_sui_19m, DF_simulations_sui_20m, DF_simulations_sui_21m)
+
+colors <- rainbow(21)
+
+plot_list <- list()
+
+for (i in seq_along(df_list)) {
+  plot <- ggplot(df_list[[i]], aes(x = Equilibrium)) +
+    geom_density(fill = colors[i], alpha = 0.5) +
+    geom_density(data = DF_simulations_sui, aes(x = Equilibrium), fill = "grey", alpha = 0.5) +
+    labs(title = paste("Item", i),
+         x = "",
+         y = "") +
+    theme(panel.background = element_rect(fill = "white"),
+          panel.grid.major = element_line(color = "grey", linetype = "dashed"),
+          panel.grid.minor = element_line(color = "grey", linetype = "dashed"),
+          text = element_text(size = 7, family = "serif")) +
+    theme(plot.title = element_text(family = "serif", size = 8, hjust = 0.5))
+  
+  plot_list[[i]] <- plot
+}
+
+plot_list
+```
