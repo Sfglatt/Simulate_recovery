@@ -89,3 +89,88 @@ DF_ising_connectivities
 DF_ising_thresholds
 ```
 
+```{r S simulate equilibrium}
+set.seed(123456)
+Ntime = 20000 # 20,000 time points to simulate
+
+ResFunction(connectivity_resst_sui_sim, thresholds_resst_sui_sim, Ntime, beta = 1.5)
+Equilibrium_sui <- output.binary_eq 
+Pertubations_sui <- output.binary_pert
+stateEQ_sui <- mean(apply(Equilibrium_sui,1,sum)) # mean sum of active symptoms at equilibrium 
+statePERT_sui <- mean(apply(Pertubations_sui,1,sum))  # mean sum of active symptoms at with perturbations 
+
+stateEQ_sui_sd <- sd(apply(Equilibrium_sui,1,sum)) # sd of sum of active symptoms at equilibrium 
+statePERT_sui_sd <- sd(apply(Pertubations_sui,1,sum)) # sd of sum of active symptoms at with perturbations
+
+stateEQ_sui # 5.04
+statePERT_sui # 11.7495
+stateEQ_sui_sd  # 3.969833
+statePERT_sui_sd  # 6.877086
+
+# make dataframe with total active nodes at equilibrium and with perturbations at all timepoints (20,000)
+DF_simulations_sui <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_sui,1,sum),
+                         Perturbations = apply(Pertubations_sui,1,sum)) 
+
+data.frame(DF_simulations_sui)
+
+summary(DF_simulations_sui) # look at median and interquartile range 
+# Timepoints     Equilibrium    Perturbations  
+# Min.   :    1   Min.   : 0.00   Min.   : 0.00  
+# 1st Qu.: 5001   1st Qu.: 2.00   1st Qu.: 5.00  
+# Median :10000   Median : 4.00   Median :13.00  
+# Mean   :10000   Mean   : 5.04   Mean   :11.75  
+# 3rd Qu.:15000   3rd Qu.: 7.00   3rd Qu.:18.00  
+# Max.   :20000   Max.   :20.00   Max.   :21.00  
+
+DF_subset_1_2k <- subset(DF_simulations_sui, Timepoints >= 1000 & Timepoints <= 2000)
+summary(DF_subset_1_2k) # doing this for the perturbed response from 1000-20000
+# Timepoints    Equilibrium    Perturbations  
+# Min.   :1000   Min.   :0.000   Min.   : 0.00  
+# 1st Qu.:1250   1st Qu.:2.000   1st Qu.: 6.00  
+# Median :1500   Median :3.000   Median :17.00  
+# Mean   :1500   Mean   :3.529   Mean   :13.22  
+# 3rd Qu.:1750   3rd Qu.:5.000   3rd Qu.:20.00  
+# Max.   :2000   Max.   :9.000   Max.   :21.00  
+Pertubations_sui_1_2k <- Pertubations_sui[1000:2000, ]
+Pertubations_PERT_sui_1_2k_mean <- mean(apply(Pertubations_sui_1_2k,1,sum)) 
+Pertubations_PERT_sui_1_2k_sd <- sd(apply(Pertubations_sui_1_2k,1,sum)) 
+Pertubations_PERT_sui_1_2k_mean # mean 
+Pertubations_PERT_sui_1_2k_sd # sd
+
+DF_subset_2_3k <- subset(DF_simulations_sui, Timepoints >= 2000 & Timepoints <= 3000)
+summary(DF_subset_2_3k) # look at one period of pertubation. doing this for the perturbed response from 2000-3000
+# Timepoints    Equilibrium    Perturbations  
+# Min.   :2000   Min.   :0.000   Min.   :10.00  
+# 1st Qu.:2250   1st Qu.:1.000   1st Qu.:14.00  
+# Median :2500   Median :2.000   Median :15.00  
+# Mean   :2500   Mean   :1.823   Mean   :15.51  
+# 3rd Qu.:2750   3rd Qu.:3.000   3rd Qu.:17.00  
+# Max.   :3000   Max.   :7.000   Max.   :21.00  
+Pertubations_sui_2_3k <- Pertubations_sui[2000:3000, ]
+Pertubations_PERT_sui_2_3k_mean <- mean(apply(Pertubations_sui_2_3k,1,sum)) 
+Pertubations_PERT_sui_2_3k_sd <- sd(apply(Pertubations_sui_2_3k,1,sum)) 
+Pertubations_PERT_sui_2_3k_mean 
+Pertubations_PERT_sui_2_3k_sd 
+
+# plot density (active sum density) at equilibrium and with perturbation
+
+# individual plots
+ggplot(data = DF_simulations_sui) + geom_density(aes(x=Equilibrium) , fill = "#00AFBB")
+ggplot(data = DF_simulations_sui) + geom_density(aes(x=Perturbations) , fill = "#00AFBB")
+
+# combined plot
+# change some default settings 
+ggplot(data = DF_simulations_sui) +
+  geom_density(aes(x = Equilibrium, fill = "Equilibrium"), alpha = 0.5) +
+  geom_density(aes(x = Perturbations, fill = "Perturbations"), alpha = 0.5) +
+  scale_fill_manual(values = c("#838B8B", "#C1CDCD"), name = "") +
+  labs(title = "", 
+       x = "Active symptoms over 20,000 timepoints", 
+       y = "Density") +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(color = "grey", linetype = "dashed"),
+        panel.grid.minor = element_line(color = "grey", linetype = "dashed"),
+        text=element_text(size = 14,  family = "serif"))
+```
+
