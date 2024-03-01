@@ -252,3 +252,36 @@ sum(combined_Rs$Q47 >= 3) / length(combined_Rs$Q47) * 100 # % endorsed suicidal 
 head(combined_Rs)
 # write.csv(combined_Rs, 'Combined_samples_simulations_1319_2.18.csv') # save a csv with the 1,319 participants with uniform recovery and SBQ-R variables (raw, recoded, total). 
 ```
+
+```{r make groups}
+
+### create groups of current suicide and former suicide ###
+
+RESST_sim_sui <- combined_Rs %>% filter(Q51 > 3) # a data frame with people who perceive a LIKELY future suicide attempt (n = 274)
+
+RESST_sim_noFSA <- combined_Rs %>% filter(Q51 < 4) # a data frame with people who perceive an UNLIKELY future suicide attempt (n = 1045)
+
+RESST_sim_no_SI <- RESST_sim_noFSA %>% filter(Q47 < 3) # a data frame with people who perceive an UNLIKELY future suicide attempt AND "never" or "rarely" past year suicidal ideation  (n = 508)
+
+RESST_sim_lifetime_risk <- RESST_sim_no_SI %>% filter(Q45 > 2) # a dataset with people who perceive an UNLIKELY future suicide attempt AND "never" or "rarely" past year suicidal ideation AND endorse a lifetime suicide plan/attempt history (n = 371)
+nrow(RESST_sim_lifetime_risk)
+
+# n = 274 and n = 371 are the final groups, isolated from 1,319 RESST participants across samples 1-4. 
+
+### SBQ-R total scores and summaries for current suicide group ###
+summary(RESST_sim_sui$SBQR_total) 
+# all individuals meet the SBQ-R cutoff for suicide risk and average is over the cutoff. 
+sum(RESST_sim_sui$SBQR_total >= 7) / length(RESST_sim_sui$SBQR_total) * 100 # % met or exceeded the risk cutoff
+sum(RESST_sim_sui$Q45 >= 3) / length(RESST_sim_sui$Q45) * 100 # % endorsed a suicide plan or attempt history
+sum(RESST_sim_sui$Q47 >= 3) / length(RESST_sim_sui$Q47) * 100 # % endorsed ideation "somewhat" or >
+
+### SBQ-R total scores and summaries for former suicide group ###
+summary(RESST_sim_lifetime_risk$SBQR_total) 
+sum(RESST_sim_lifetime_risk$SBQR_total >= 7) / length(RESST_sim_lifetime_risk$SBQR_total) * 100 # % met or exceeded the risk cutoff
+sum(RESST_sim_lifetime_risk$Q45 >= 3) / length(RESST_sim_lifetime_risk$Q45) * 100 # % endorsed a suicide plan or attempt 
+sum(RESST_sim_lifetime_risk$Q47 >= 3) / length(RESST_sim_lifetime_risk$Q47) * 100 # % endorsed ideation "somewhat" or > 
+
+# most individuals meet the SBQ-R cutoff for suicide risk and the average is over the cutoff. This makes sense since the SBQ-R uses lifetime features as part of the total score - and we only included people in this group with NO perceived likelihood of a future suicide attempt AND "rarely" or "never" suicidal thoughts AND a lifetime history of a suicide plan or attempt. the lifetime variables  contribute to the total risk score. this is why we only used item 4 to categorize CURRENT suicide risk - since the other variables are past-year or lifetime. 
+
+```
+
