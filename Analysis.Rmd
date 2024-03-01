@@ -62,7 +62,7 @@ thresholds_resst_sui_sim = RESST_sui_binary_res$thresholds
 
 DF_ising_connectivities <- as.data.frame(connectivity_resst_sui_sim)
 
-# write_xlsx(DF_ising_connectivities, 'C:\\Users\\sofel\\OneDrive\\Documents\\Labs\\PASE-R Lab\\RESST network\\Simulations_FSA\\DF_ising_connectivities.xlsx') # excel with ising model connectivities 
+# write_xlsx(DF_ising_connectivities, 'DF_ising_connectivities.xlsx') # excel with ising model connectivities 
 ## this saved our connectivies as an excel
 
 # save(DF_ising_connectivities, file="DF_ising_connectivities.Rdata") # Rdata file to directly import to R
@@ -72,7 +72,7 @@ DF_ising_connectivities <- as.data.frame(connectivity_resst_sui_sim)
 
 DF_ising_thresholds <- as.data.frame(thresholds_resst_sui_sim)
 
-# write_xlsx(DF_ising_thresholds, 'C:\\Users\\sofel\\OneDrive\\Documents\\Labs\\PASE-R Lab\\RESST network\\Simulations_FSA\\DF_ising_thresholds.xlsx') # excel with ising model feature thresholds
+# write_xlsx(DF_ising_thresholds, 'DF_ising_thresholds.xlsx') # excel with ising model feature thresholds
 ## this saved our thresholds as an excel
 
 # save(DF_ising_thresholds, file="DF_ising_thresholds.Rdata") # Rdata file to directly import to R
