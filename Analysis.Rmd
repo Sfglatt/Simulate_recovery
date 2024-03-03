@@ -908,13 +908,13 @@ total_manipulated_s <- data.frame(
 
 print(total_manipulated_s)
 
-write.csv(total_manipulated_s, 'Sui_data_output/DF_sui_equilibrium_manipulated_totals.csv')
+write.csv(total_manipulated_s, 'Sui_data_output/DF_sui_equilibrium_manipulated_totals.csv') # totals
 ```
 
 ```{r S simulations individual pre and post manipulation}
 # DF_simulations_sui is  pre-test (no manipulations)
 # DF_simulations_sui_[ITEM]m is post-test (item manipulation)
-
+ 
 ## for each paired t test, we need to EXCLUDE the item that is being manipulated. e.g., when comparing total average system activation at equilibrium vs after 1 was manipulated, exclude item 1; when comparing total system activation at equilibrium vs after 19 was manipulated, exclude item 19. Otherwise, this manipulation will conflate the effect ##
 
 ### make datasets at equilibrium EXCLUDING manipulated item: 21 new columns  
@@ -978,8 +978,6 @@ print(head(combined_data_minus))
 
 combined_data_all <- cbind(combined_data, combined_data_minus)
 print(head(combined_data_all))
-
-write_xlsx(combined_data_all, 'C:\\Users\\sofel\\OneDrive\\Documents\\Labs\\PASE-R Lab\\RESST network\\Simulations_FSA\\DF_equilibrium_sui_manipulated_total_equil.xlsx')
 
 ## paired t tests between the equilibrium dataframe pre and post manipulated item, excluding the manipulated item from both
 
@@ -3037,7 +3035,7 @@ df_totals_equil <- data.frame(
 
 print(df_totals_equil)
 
-write.csv(df_totals_equil, 'Both_sui_data_output/DF_sui_no_sui_equilibrium_symptom_totals.xlsx') # file with total number of active features for both groups
+write.csv(df_totals_equil, 'Both_sui_data_output/DF_sui_no_sui_equilibrium_symptom_totals.csv') # file with total number of active features for both groups
 
 ## proportion tests between group totals ##
 
