@@ -911,6 +911,155 @@ print(total_manipulated_s)
 write.csv(total_manipulated_s, 'Sui_data_output/DF_sui_equilibrium_manipulated_totals.csv')
 ```
 
+```{r simulations individual pre and post manipulation}
+# DF_simulations_sui is  pre-test (no manipulations)
+# DF_simulations_sui_[ITEM]m is post-test (item manipulation)
+
+## for each paired t test, we need to EXCLUDE the item that is being manipulated. e.g., when comparing total average system activation at equilibrium vs after 1 was manipulated, exclude item 1; when comparing total system activation at equilibrium vs after 19 was manipulated, exclude item 19. Otherwise, this manipulation will conflate the effect ##
+
+### make datasets at equilibrium EXCLUDING manipulated item: 21 new columns  
+
+Ntime <- nrow(Equilibrium_sui_1_manip) 
+df_list <- list()
+
+for (i in 1:21) {
+  manipulated_matrix <- get(paste0("Equilibrium_sui_", i, "_manip"))
+  #### exclude the corresponding item (column) based on the scenario index
+  manipulated_matrix <- manipulated_matrix[, -i, drop = FALSE]
+  df <- data.frame(Timepoints = 1:Ntime,
+                   Equilibrium = apply(manipulated_matrix, 1, sum))
+  df_name <- paste0("DF_simulations_sui_", i, "m")
+  df_list[[df_name]] <- df
+}
+
+list2env(df_list, envir = .GlobalEnv)
+
+for (i in 1:21) {
+  df_name <- paste0("DF_simulations_sui_", i, "m")
+  print(head(get(df_name)))
+}
+
+combined_data <- do.call(cbind, df_list)
+print(head(combined_data))
+
+### now make dataset at equilibrium, with NO manipulated datasets, excluding item 1, item 2, etc. to match the paired data
+# original: DF_simulations_sui <- data.frame(Timepoints = 1:Ntime, Equilibrium = apply(Equilibrium_sui,1,sum))
+
+Ntime <- nrow(Equilibrium_sui)
+
+df_list_minus <- list()
+
+for (i in 1:ncol(Equilibrium_sui)) {
+  excluded_matrix <- Equilibrium_sui[, -i, drop = FALSE]
+  df_minus <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(excluded_matrix, 1, sum))
+  df_name_minus <- paste0("DF_sim_sui_minus", i)
+  df_list_minus[[df_name_minus]] <- df_minus
+}
+
+for (i in 1:length(df_list_minus)) {
+  df_name_minus <- paste0("DF_sim_sui_minus", i)
+  print(head(df_list_minus[[df_name_minus]]))
+}
+
+combined_data_minus <- df_list_minus[[1]]
+
+for (i in 2:length(df_list_minus)) {
+  df_minus <- df_list_minus[[i]]
+  col_name_minus <- paste("Equilibrium_minus", i, sep = "")
+  col_name_minus <- make.names(col_name_minus, unique = TRUE)  # Ensure valid column names
+  names(df_minus)[names(df_minus) == "Equilibrium"] <- col_name_minus
+  combined_data_minus <- cbind(combined_data_minus, df_minus[col_name_minus])
+}
+
+print(head(combined_data_minus))
+
+## combine manipulated item dataframes (that exclude the manipulated item) and the equilibrium sui dataframes that exclude the maniulated item 
+
+combined_data_all <- cbind(combined_data, combined_data_minus)
+print(head(combined_data_all))
+
+write_xlsx(combined_data_all, 'C:\\Users\\sofel\\OneDrive\\Documents\\Labs\\PASE-R Lab\\RESST network\\Simulations_FSA\\DF_equilibrium_sui_manipulated_total_equil.xlsx')
+
+## paired t tests between the equilibrium dataframe pre and post manipulated item, excluding the manipulated item from both
+
+paired_t <- jmv::ttestPS(
+    data = combined_data_all, # our combined dataframe with equilibrium columns minus individual manipulated items and manipulated dataframes minus manipulated item
+    pairs = list(
+        list(
+            i1="DF_simulations_sui_1m.Equilibrium",
+            i2="Equilibrium"),
+        list(
+            i1="DF_simulations_sui_2m.Equilibrium",
+            i2="Equilibrium_minus2"),
+        list(
+            i1="DF_simulations_sui_3m.Equilibrium",
+            i2="Equilibrium_minus3"),
+        list(
+            i1="DF_simulations_sui_4m.Equilibrium",
+            i2="Equilibrium_minus4"),
+        list(
+            i1="DF_simulations_sui_5m.Equilibrium",
+            i2="Equilibrium_minus5"),
+        list(
+            i1="DF_simulations_sui_6m.Equilibrium",
+            i2="Equilibrium_minus6"),
+        list(
+            i1="DF_simulations_sui_7m.Equilibrium",
+            i2="Equilibrium_minus7"),
+        list(
+            i1="DF_simulations_sui_8m.Equilibrium",
+            i2="Equilibrium_minus8"),
+        list(
+            i1="DF_simulations_sui_9m.Equilibrium",
+            i2="Equilibrium_minus9"),
+        list(
+            i1="DF_simulations_sui_10m.Equilibrium",
+            i2="Equilibrium_minus10"),
+        list(
+            i1="DF_simulations_sui_11m.Equilibrium",
+            i2="Equilibrium_minus11"),
+        list(
+            i1="DF_simulations_sui_12m.Equilibrium",
+            i2="Equilibrium_minus12"),
+        list(
+            i1="DF_simulations_sui_13m.Equilibrium",
+            i2="Equilibrium_minus13"),
+        list(
+            i1="DF_simulations_sui_14m.Equilibrium",
+            i2="Equilibrium_minus14"),
+        list(
+            i1="DF_simulations_sui_15m.Equilibrium",
+            i2="Equilibrium_minus15"),
+        list(
+            i1="DF_simulations_sui_16m.Equilibrium",
+            i2="Equilibrium_minus16"),
+        list(
+            i1="DF_simulations_sui_17m.Equilibrium",
+            i2="Equilibrium_minus17"),
+        list(
+            i1="DF_simulations_sui_18m.Equilibrium",
+            i2="Equilibrium_minus18"),
+        list(
+            i1="DF_simulations_sui_19m.Equilibrium",
+            i2="Equilibrium_minus19"),
+        list(
+            i1="DF_simulations_sui_20m.Equilibrium",
+            i2="Equilibrium_minus20"),
+        list(
+            i1="DF_simulations_sui_21m.Equilibrium",
+            i2="Equilibrium_minus21")),
+    effectSize = TRUE,
+    ciES = TRUE,
+    desc = TRUE)
+
+paired_t$ttest
+paired_t$desc
+
+as.data.frame(paired_t$ttest)
+as.data.frame(paired_t$desc)
+```
+
 ```{r individual manipulation simulation plots}
 ## plots at equilibrium ## 
 EQ_1m <- ggplot(DF_simulations_sui_1m, 
@@ -1460,15 +1609,263 @@ plot(Sim1,
 
 LCT_recovery_di <- LCT(
   RESST_sui_binary,
-  corr = "auto",
+  corr = "auto", # tetrachoric (binary)
   model = "glasso",
   algorithm = "walktrap",
   uni.method = "Louvain", 
-  iter = 100,
+  iter = 100, # recommended
   seed = 123456,
-  verbose = TRUE,
+  verbose = FALSE,
 )
 
 LCT_recovery_di
+```
+
+### former suicide group ###
+
+```{r NS Isolate variables}
+
+RESST_no_sui_binary <- dplyr::select(RESST_sim_lifetime_risk_di, # binary vars
+                              R1, 
+                              R2, 
+                              R3,
+                              R4, 
+                              R5, 
+                              R6,
+                              R7, 
+                              R8, 
+                              R9,
+                              R10, 
+                              R11, 
+                              R12,
+                              R13, 
+                              R14, 
+                              R15,
+                              R16, 
+                              R17, 
+                              R18,
+                              R19, 
+                              R20, 
+                              R21,
+                              )
+nrow(RESST_no_sui_binary)
+
+write.csv(RESST_no_sui_binary, 'No_sui_data_output/DF_no_sui_data_371.csv') # csv with our final dataset
+
+nodeNames = c( "R1_di","R2_di", "R3_di","R4_di", "R5_di", "R6_di","R7_di", "R8_di", "R9_di","R10_di", "R11_di","R12_di","R13_di","R14_di","R15_di","R16_di", "R17_di", "R18_di","R19_di", "R20_di", "R21_di")
+```
+
+```{r NS Ising model}
+
+RESST_no_sui_binary <- IsingFit(RESST_no_sui_binary, plot = FALSE) 
+
+sim_no_sui_base_ising <- qgraph(RESST_no_sui_binary$weiadj,
+                     theme = "colorblind",
+                     nodeNames = nodeNames,
+                     label.norm = "OOO",
+                     legend = FALSE,
+                     border.width = as.numeric(abs(RESST_no_sui_binary$thresholds)*3),
+                     border.color = "purple") #  Node borders show the preference of the  node to be present/absent. > thickness shows lower likelihood to activate.
+
+### get connectivity and threshold objects -  to use these in  (1) case simulations -- equilibrium perturbed -- and (2) phase stability analysis ###
+
+connectivity_resst_no_sui_sim = RESST_no_sui_binary$weiadj 
+thresholds_resst_no_sui_sim = RESST_no_sui_binary$thresholds 
+
+## save connectivities and thresholds as dataframes and then excel files 
+# connectivities
+DF_ising_ns_connectivities <- as.data.frame(connectivity_resst_no_sui_sim)
+
+write.csv(DF_ising_ns_connectivities, 'No_sui_data_output/DF_no_sui_ising_connectivities.csv') # csv with ising model connectivities 
+# save(DF_ising_connectivities, file="DF_ising_connectivities.Rdata") # Rdata file to directly import to R
+## this saved our connectivies as Rdata
+
+# thresholds
+DF_ising_ns_thresholds <- as.data.frame(thresholds_resst_no_sui_sim)
+
+write.csv(DF_ising_ns_thresholds, 'No_sui_data_output/DF_no sui_ising_thresholds.csv') # excel with ising model feature thresholds
+
+# save(DF_ising_thresholds, file="DF_ising_thresholds.Rdata") # Rdata file to directly import to R
+## this saved our thresholds as Rdata
+
+# save image of ising model
+# pdf("sim_sui_base_ising", width=10, height=10)
+# plot(sim_sui_base_ising)
+# dev.off()
+
+# view 
+DF_ising_ns_connectivities
+DF_ising_ns_thresholds
+```
+```{r NS Simulate equilibrium}
+set.seed(123456)
+Ntime = 20000 # 20,000 time points to simulate
+
+Glauber_2(connectivity_resst_no_sui_sim, thresholds_resst_no_sui_sim, Ntime, beta = 1.5, intervention = "positive") 
+Equilibrium_no_sui <- output.binary_eq 
+Pertubations_no_sui <- output.binary_pert
+stateEQ_no_sui <- mean(apply(Equilibrium_no_sui,1,sum)) # mean sum of active symptoms at equilibrium 
+statePERT_no_sui <- mean(apply(Pertubations_no_sui,1,sum))  # mean sum of active symptoms at with perturbations 
+
+stateEQ_no_sui_sd <- sd(apply(Equilibrium_no_sui,1,sum)) # sd of sum of active symptoms at equilibrium 
+statePERT_no_sui_sd <- sd(apply(Pertubations_no_sui,1,sum)) # sd of sum of active symptoms at with perturbations
+
+stateEQ_no_sui # 17.67815
+statePERT_no_sui # 15.2466
+stateEQ_no_sui_sd  # 2.6569
+statePERT_no_sui_sd  # 4.334112
+
+# make dataframe with total active nodes at equilibrium and with perturbations at all timepoints (20,000)
+DF_simulations_no_sui <- data.frame(Timepoints = 1:Ntime,
+                         Equilibrium = apply(Equilibrium_no_sui,1,sum),
+                         Perturbations = apply(Pertubations_no_sui,1,sum)) 
+
+data.frame(DF_simulations_no_sui)
+
+summary(DF_simulations_no_sui) # look at median and interquartile range 
+#  Timepoints     Equilibrium    Perturbations  
+# Min.   :    1   Min.   : 7.00   Min.   : 0.00  
+# 1st Qu.: 5001   1st Qu.:16.00   1st Qu.:13.00  
+# Median :10000   Median :19.00   Median :15.00  
+# Mean   :10000   Mean   :17.68   Mean   :15.25  
+# 3rd Qu.:15000   3rd Qu.:20.00   3rd Qu.:19.00  
+# Max.   :20000   Max.   :21.00   Max.   :21.00 
+
+DF_subset_1_2k_ns <- subset(DF_simulations_no_sui, Timepoints >= 1000 & Timepoints <= 2000)
+summary(DF_subset_1_2k_ns) # this is 1-2000 timepoints
+# Timepoints    Equilibrium    Perturbations  
+# Min.   :1000   Min.   :17.00   Min.   : 0.00  
+# 1st Qu.:1250   1st Qu.:19.00   1st Qu.:15.00  
+# Median :1500   Median :19.00   Median :17.00  
+# Mean   :1500   Mean   :19.45   Mean   :16.08  
+# 3rd Qu.:1750   3rd Qu.:20.00   3rd Qu.:19.00  
+# Max.   :2000   Max.   :21.00   Max.   :20.00 
+Pertubations_sui_1_2k_ns <- Pertubations_no_sui[1000:2000, ]
+Pertubations_PERT_sui_1_2k_mean_ns <- mean(apply(Pertubations_sui_1_2k_ns,1,sum)) 
+Pertubations_PERT_sui_1_2k_sd_ns <- sd(apply(Pertubations_sui_1_2k_ns,1,sum)) 
+Pertubations_PERT_sui_1_2k_mean_ns # mean =  16.07592 (same as above described in IQR)
+Pertubations_PERT_sui_1_2k_sd_ns # SD = 3.469615
+
+DF_subset_2_3k_ns <- subset(DF_simulations_no_sui, Timepoints >= 2000 & Timepoints <= 3000)
+summary(DF_subset_2_3k_ns) # this is 2-3000 timepoints
+# Timepoints    Equilibrium    Perturbations  
+# Min.   :2000   Min.   :10.00   Min.   : 0.00  
+# 1st Qu.:2250   1st Qu.:15.00   1st Qu.:16.00  
+# Median :2500   Median :19.00   Median :19.00  
+# Mean   :2500   Mean   :17.61   Mean   :17.84  
+# 3rd Qu.:2750   3rd Qu.:20.00   3rd Qu.:20.00  
+# Max.   :3000   Max.   :21.00   Max.   :21.00  
+Pertubations_sui_2_3k_ns <- Pertubations_no_sui[2000:3000, ]
+Pertubations_PERT_sui_2_3k_mean_ns <- mean(apply(Pertubations_sui_2_3k_ns,1,sum)) 
+Pertubations_PERT_sui_2_3k_sd_ns <- sd(apply(Pertubations_sui_2_3k_ns,1,sum)) 
+Pertubations_PERT_sui_2_3k_mean_ns # mean = 17.84116 (same as above described in IQR)
+Pertubations_PERT_sui_2_3k_sd_ns # SD 3.520191
+
+
+# plot density (active sum density) at equilibrium and with perturbation
+
+# individual plots
+ggplot(data = DF_simulations_no_sui) + geom_density(aes(x=Equilibrium) , fill = "#00AFBB")
+ggplot(data = DF_simulations_no_sui) + geom_density(aes(x=Perturbations) , fill = "#00AFBB")
+
+# combined plot
+# change some default settings 
+ggplot(data = DF_simulations_no_sui) +
+  geom_density(aes(x = Equilibrium, fill = "Equilibrium"), alpha = 0.5) +
+  geom_density(aes(x = Perturbations, fill = "Perturbations"), alpha = 0.5) +
+  scale_fill_manual(values = c("#838B8B", "#C1CDCD"), name = "") +
+  labs(title = "", 
+       x = "Active symptoms over 20,000 timepoints", 
+       y = "Density") +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(color = "grey", linetype = "dashed"),
+        panel.grid.minor = element_line(color = "grey", linetype = "dashed"),
+        text=element_text(size = 14,  family = "serif"))
+
+## save Rdata/excel dataframes ##
+
+# active node totals at equilibrium and with perturbations
+write.csv(DF_simulations_no_sui, "No_sui_data_output/DF_no_sui_simulations.csv") 
+
+# raw simulated data at equilibrium (n = 20,000 for 21 variables)
+Equilibrium_no_sui <- as.data.frame(Equilibrium_no_sui)
+write.csv(Equilibrium_no_sui, "No_sui_data_output/DF_no_sui_equilibrium.csv")
+
+# raw simulated data with perturbations (n = 20,000 for 21 variables)
+Pertubations_no_sui <- as.data.frame(Pertubations_no_sui)
+write.csv(Pertubations_no_sui, "No_sui_data_output/DF_no_sui_perturbations.csv")
+```
+```{r NS simulation plots}
+
+# equilibrium #
+ggplot(DF_simulations_no_sui, # load 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "", 
+       x = "Time points",
+       y = expression(paste("RESST symptoms - FSA"))) +
+  theme(
+    plot.title = element_text(size = 14, face="bold", hjust = 0.5),
+    axis.title = element_text(size=12, face = "bold"),
+    axis.text = element_text(size = 12, face = "bold")) 
+
+hist(DF_simulations_no_sui$Equilibrium,
+     col="black",
+     xlim=c(0,21),
+     breaks=seq(0,21),
+     main="",
+     xlab = expression(bold("Symptoms")),
+     ylab = expression(bold(paste("RESST symptoms"))))
+
+# perturbations #
+ggplot(DF_simulations_no_sui, aes(x = Timepoints, y = Perturbations)) + 
+  geom_line() +
+  theme_classic() +
+  geom_vline(xintercept = seq(from = 1000, to = Ntime -1, by=1000), color="red", 
+             size=.7) +
+  labs(title = "", 
+       x = "Time points",
+       y = expression(paste("RESST symptoms"))) +
+  theme(
+    plot.title = element_text(size = 14, face="bold", hjust = 0.5),
+    axis.title = element_text(size=12, face = "bold"),
+    axis.text = element_text(size = 12, face = "bold")) 
+
+# plot perturbed time 2,000 - 3,000 (close up of full)
+ggplot(DF_simulations_no_sui, aes(x = Timepoints, y = Perturbations)) + 
+  geom_line() +
+  theme_classic() +
+  geom_vline(xintercept = seq(from = 1000, to = Ntime -1, by=1000), color="red", 
+             size=.7) +
+  labs(title = "", 
+       x = "Time points",
+       y = expression(paste("RESST symptoms"))) +
+  theme(
+    plot.title = element_text(size = 14, face="bold", hjust = 0.5),
+    axis.title = element_text(size=12, face = "bold"),
+    axis.text = element_text(size = 12, face = "bold")) + scale_x_continuous(limits = c(2000, 3000))
+
+# plot perturbed time 1,000 - 2,000 (cloe up of full)
+ggplot(DF_simulations_no_sui, aes(x = Timepoints, y = Perturbations)) + 
+  geom_line() +
+  theme_classic() +
+  geom_vline(xintercept = seq(from = 1000, to = Ntime -1, by=1000), color="red", 
+             size=.7) +
+  labs(title = "", 
+       x = "Time points",
+       y = expression(paste("RESST symptoms"))) +
+  theme(
+    plot.title = element_text(size = 14, face="bold", hjust = 0.5),
+    axis.title = element_text(size=12, face = "bold"),
+    axis.text = element_text(size = 12, face = "bold")) + scale_x_continuous(limits = c(1000, 2000))
+
+hist(DF_simulations_no_sui$Perturbations,
+     col="black",
+     xlim=c(0,21),
+     breaks=seq(0,21),
+     main="",
+     xlab = expression(bold("Symptoms")),
+     ylab = expression(bold(paste("RESST symptoms"))))
 ```
 
