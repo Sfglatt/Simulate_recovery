@@ -792,7 +792,7 @@ write.csv(DF_simulations_sui_21m, "Sui_data_output/DF_sui_simulations_21_manipul
 glimpse(DF_simulations_sui_21m)
 ```
 
-```{r  S simulations INDIVIDUAL item table desc}
+```{r  S simulations INDIVIDUAL item table descriptives}
 
 summaries <- list(summ_1m_sui, summ_2m_sui, summ_3m_sui, summ_4m_sui, summ_5m_sui, summ_6m_sui,
                   summ_7m_sui, summ_8m_sui, summ_9m_sui, summ_10m_sui, summ_11m_sui, summ_12m_sui,
@@ -853,3 +853,622 @@ for (i in seq_along(df_list)) {
 
 plot_list
 ```
+
+```{r simulations INDIVIDUAL manipulations total}
+get_variable_totals <- function(df) {
+  data.frame(variable = paste0("R", 1:ncol(df)), count = colSums(df))
+}
+
+total_1m_s <- get_variable_totals(Equilibrium_sui_1_manip)
+total_2m_s <- get_variable_totals(Equilibrium_sui_2_manip)
+total_3m_s <- get_variable_totals(Equilibrium_sui_3_manip)
+total_4m_s <- get_variable_totals(Equilibrium_sui_4_manip)
+total_5m_s <- get_variable_totals(Equilibrium_sui_5_manip)
+total_6m_s <- get_variable_totals(Equilibrium_sui_6_manip)
+total_7m_s <- get_variable_totals(Equilibrium_sui_7_manip)
+total_8m_s <- get_variable_totals(Equilibrium_sui_8_manip)
+total_9m_s <- get_variable_totals(Equilibrium_sui_9_manip)
+total_10m_s <- get_variable_totals(Equilibrium_sui_10_manip)
+total_11m_s <- get_variable_totals(Equilibrium_sui_11_manip)
+total_12m_s <- get_variable_totals(Equilibrium_sui_12_manip)
+total_13m_s <- get_variable_totals(Equilibrium_sui_13_manip)
+total_14m_s <- get_variable_totals(Equilibrium_sui_14_manip)
+total_15m_s <- get_variable_totals(Equilibrium_sui_15_manip)
+total_16m_s <- get_variable_totals(Equilibrium_sui_16_manip)
+total_17m_s <- get_variable_totals(Equilibrium_sui_17_manip)
+total_18m_s <- get_variable_totals(Equilibrium_sui_18_manip)
+total_19m_s <- get_variable_totals(Equilibrium_sui_19_manip)
+total_20m_s <- get_variable_totals(Equilibrium_sui_20_manip)
+total_21m_s <- get_variable_totals(Equilibrium_sui_21_manip)
+
+
+total_manipulated_s <- data.frame(
+  total_1m_s,
+  total_2m_s,
+  total_3m_s,
+  total_4m_s,
+  total_5m_s,
+  total_6m_s,
+  total_7m_s,
+  total_8m_s,
+  total_9m_s,
+  total_10m_s,
+  total_11m_s,
+  total_12m_s,
+  total_13m_s,
+  total_14m_s,
+  total_15m_s,
+  total_16m_s,
+  total_17m_s,
+  total_18m_s,
+  total_19m_s,
+  total_20m_s,
+  total_21m_s
+)
+
+print(total_manipulated_s)
+
+write.csv(total_manipulated_s, 'Sui_data_output/DF_sui_equilibrium_manipulated_totals.csv')
+```
+
+```{r individual manipulation simulation plots}
+## plots at equilibrium ## 
+EQ_1m <- ggplot(DF_simulations_sui_1m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 1", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_1m
+
+EQ_2m <- ggplot(DF_simulations_sui_2m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 2", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_2m
+
+EQ_3m <- ggplot(DF_simulations_sui_3m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 3", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_3m
+
+EQ_4m <- ggplot(DF_simulations_sui_4m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 4", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_4m
+
+EQ_5m <- ggplot(DF_simulations_sui_5m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 5", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_5m
+
+EQ_6m <- ggplot(DF_simulations_sui_6m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 6", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_6m
+
+EQ_7m <- ggplot(DF_simulations_sui_7m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 7", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_7m
+
+EQ_8m <- ggplot(DF_simulations_sui_8m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 8", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_8m
+
+EQ_9m <- ggplot(DF_simulations_sui_9m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 9", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_9m
+
+EQ_10m <- ggplot(DF_simulations_sui_10m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 10", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_10m
+
+EQ_11m <- ggplot(DF_simulations_sui_11m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 11", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_11m
+
+EQ_12m <- ggplot(DF_simulations_sui_12m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 12", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_12m
+
+EQ_13m <- ggplot(DF_simulations_sui_13m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 13", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_13m
+
+EQ_14m <- ggplot(DF_simulations_sui_14m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 14", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_14m
+
+EQ_15m <- ggplot(DF_simulations_sui_15m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 15", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_15m
+
+EQ_16m <- ggplot(DF_simulations_sui_16m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 16", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_16m
+
+EQ_17m <- ggplot(DF_simulations_sui_17m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 17", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_17m
+
+EQ_18m <- ggplot(DF_simulations_sui_18m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 18", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_18m
+
+EQ_19m <- ggplot(DF_simulations_sui_19m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 19", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_19m
+
+EQ_20m <- ggplot(DF_simulations_sui_20m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 20", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_20m
+
+EQ_21m <- ggplot(DF_simulations_sui_21m, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "Item 21", 
+       x = "",
+       y = expression(paste(""))) +
+  theme(
+    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
+    axis.title = element_text(family = "serif",size = 6,  ),
+    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
+EQ_21m
+
+plots <- list(EQ_1m, EQ_2m, EQ_3m, EQ_4m, EQ_5m, EQ_6m, EQ_7m, EQ_8m, EQ_9m, EQ_10m, EQ_11m, EQ_12m, EQ_13m, EQ_14m, EQ_15m, EQ_16m, EQ_17m, EQ_18m, EQ_19m, EQ_20m, EQ_21m)
+
+plots
+
+```
+
+```{r individual manipulations system activity preferences}
+# connectivity_resst_sui_sim = RESST_sui_binary_res$weiadj 
+# thresholds_resst__sui_sim = manipulated_thresholds_resst_sui_sim[# that is manipulated]
+
+set.seed(123456)
+lm1 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim1, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(lm1)
+calculate_resilience(lm1)
+
+
+set.seed(123456)
+lm2 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim2, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(lm2)
+calculate_resilience(lm2)
+
+set.seed(123456)
+lm3 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim3, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(lm3)
+calculate_resilience(lm3)
+
+
+set.seed(123456)
+lm4 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim4, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(lm4)
+calculate_resilience(lm4)
+
+set.seed(123456)
+lm5 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim5, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(lm5)
+calculate_resilience(lm5)
+
+
+set.seed(123456)
+lm6 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim6, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(lm6)
+calculate_resilience(lm6)
+
+set.seed(123456)
+lm7 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim7, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(lm7)
+calculate_resilience(lm7)
+
+
+set.seed(123456)
+lm8 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim8, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(lm8)
+calculate_resilience(lm8)
+
+set.seed(123456)
+lm9 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim9, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(lm9)
+calculate_resilience(lm9)
+
+
+set.seed(123456)
+lm10 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim10, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(lm10)
+calculate_resilience(lm10)
+
+set.seed(123456)
+lm11 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim11, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(lm11)
+calculate_resilience(lm11)
+
+
+set.seed(123456)
+lm12 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim12, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(lm12)
+calculate_resilience(lm12)
+
+set.seed(123456)
+lm13 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim13, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(lm13)
+calculate_resilience(lm13)
+
+
+set.seed(123456)
+lm14 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim14, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(lm14)
+calculate_resilience(lm14)
+
+set.seed(123456)
+lm15 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim15, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(lm15)
+calculate_resilience(lm15)
+
+
+set.seed(123456)
+lm16 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim16, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(lm16)
+calculate_resilience(lm16)
+
+set.seed(123456)
+lm17 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim17, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+plot(lm17)
+calculate_resilience(lm17)
+
+set.seed(123456)
+lm18 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim18, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(lm18)
+calculate_resilience(lm18)
+
+
+set.seed(123456)
+lm19 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim19, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(lm19)
+calculate_resilience(lm19)
+
+set.seed(123456)
+lm20 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim20, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(lm20)
+calculate_resilience(lm20)
+
+
+set.seed(123456)
+lm21 <- make_2d_Isingland(thresholds = manipulated_thresholds_resst_sui_sim21, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1, 
+                        transform = TRUE)
+
+plot(lm21)
+calculate_resilience(lm21)
+
+## plot all images ##
+
+add_title_and_remove_axes_labels <- function(plot_object, title) {
+  plot_object +
+    ggtitle(title) +
+    theme(
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      axis.text.x = element_blank(),
+      axis.text.y = element_blank(),
+      plot.title = element_text(family = "serif", size = 8, hjust = 0.5)
+    )
+}
+
+# 3x7 
+plot_grid(
+  add_title_and_remove_axes_labels(plot(lm1), "Item 1"),
+  add_title_and_remove_axes_labels(plot(lm2), "Item 2"),
+  add_title_and_remove_axes_labels(plot(lm3), "Item 3"),
+  add_title_and_remove_axes_labels(plot(lm4), "Item 4"),
+  add_title_and_remove_axes_labels(plot(lm5), "Item 5"),
+  add_title_and_remove_axes_labels(plot(lm6), "Item 6"),
+  add_title_and_remove_axes_labels(plot(lm7), "Item 7"),
+  
+  add_title_and_remove_axes_labels(plot(lm8), "Item 8"),
+  add_title_and_remove_axes_labels(plot(lm9), "Item 9"),
+  add_title_and_remove_axes_labels(plot(lm10), "Item 10"),
+  add_title_and_remove_axes_labels(plot(lm11), "Item 11"),
+  add_title_and_remove_axes_labels(plot(lm12), "Item 12"),
+  add_title_and_remove_axes_labels(plot(lm13), "Item 13"),
+  add_title_and_remove_axes_labels(plot(lm14), "Item 14"),
+  
+  add_title_and_remove_axes_labels(plot(lm15), "Item 15"),
+  add_title_and_remove_axes_labels(plot(lm16), "Item 16"),
+  add_title_and_remove_axes_labels(plot(lm17), "Item 17"),
+  add_title_and_remove_axes_labels(plot(lm18), "Item 18"),
+  add_title_and_remove_axes_labels(plot(lm19), "Item 19"),
+  add_title_and_remove_axes_labels(plot(lm20), "Item 20"),
+  add_title_and_remove_axes_labels(plot(lm21), "Item 21"),
+  
+  ncol = 7
+)
+```
+
+```{r Ising model simulation}
+## takes 2-5 HOURS to run ##
+
+set.seed(123456)
+Sim1 <- netSimulator(
+  input = input,
+  default = "IsingFit",  
+  nCases = 274,
+  nReps = 1000,
+  nCores = 4 # use this to check how many you have available, and then /2 :parallel::detectCores()
+)
+
+Sim1
+plot(Sim1)
+plot(Sim1, 
+     yvar="strength")
+```
+
+```{r Model structure test}
+
+LCT_recovery_di <- LCT(
+  RESST_sui_binary,
+  corr = "auto",
+  model = "glasso",
+  algorithm = "walktrap",
+  uni.method = "Louvain", 
+  iter = 100,
+  seed = 123456,
+  verbose = TRUE,
+)
+
+LCT_recovery_di
+```
+
