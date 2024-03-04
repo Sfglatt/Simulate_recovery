@@ -167,7 +167,7 @@ Pertubations_PERT_sui_1_2k_mean # mean =  13.22378
 Pertubations_PERT_sui_1_2k_sd # SD = 7.193739
 
 DF_subset_2_3k <- subset(DF_simulations_sui, Timepoints >= 2000 & Timepoints <= 3000)
-summary(DF_subset_2_3k) # look at one period of pertubation. doing this for the perturbed response from 2000-3000
+summary(DF_subset_2_3k) # look at one period of perturbation. doing this for the perturbed response from 2000-3000
 # Timepoints    Equilibrium    Perturbations  
 # Min.   :2000   Min.   :0.000   Min.   :10.00  
 # 1st Qu.:2250   1st Qu.:1.000   1st Qu.:14.00  
@@ -201,7 +201,7 @@ ggplot(data = DF_simulations_sui) +
         panel.grid.minor = element_line(color = "grey", linetype = "dashed"),
         text=element_text(size = 14,  family = "serif"))
 
-## save Rdata/excel dataframes ##
+## save Rdata/csv dataframes ##
 
 # active node totals at equilibrium and with perturbations
 write.csv(DF_simulations_sui, "Sui_data_output/DF_sui_simulations.csv") 
@@ -422,7 +422,6 @@ manipulated_thresholds_resst_sui_sim21[21] <- manipulated_thresholds_resst_sui_s
 
 print(manipulated_thresholds_resst_sui_sim21) # .89
 
-
 # equilbrium with item 1 manipulated #
 set.seed(123456)
 Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim1, Ntime = 20000, beta = 1.5)
@@ -602,7 +601,6 @@ stateEQ_sui_16_manip_sd # 5.179124
 # equilbrium with item 17 manipulated #
 set.seed(123456)
 Glauber_1(connectivity_resst_sui_sim, manipulated_thresholds_resst_sui_sim17, Ntime = 20000, beta = 1.5) 
-
 
 Equilibrium_sui_17_manip <- output.binary_eq 
 Equilibrium_sui_17_manip
@@ -827,31 +825,48 @@ table_desc_sui <- merge(data_means_sds, data_summary, by = "Item")
 
 print(table_desc_sui)
 
-# plot density (active sum density) at each equilibrium items' manipulation
-# List of data frames
-df_list <- list(DF_simulations_sui_1m, DF_simulations_sui_2m, DF_simulations_sui_3m, DF_simulations_sui_4m, DF_simulations_sui_5m, DF_simulations_sui_6m, DF_simulations_sui_7m, DF_simulations_sui_8m, DF_simulations_sui_9m, DF_simulations_sui_10m, DF_simulations_sui_11m, DF_simulations_sui_12m, DF_simulations_sui_13m, DF_simulations_sui_14m, DF_simulations_sui_15m, DF_simulations_sui_16m, DF_simulations_sui_17m, DF_simulations_sui_18m, DF_simulations_sui_19m, DF_simulations_sui_20m, DF_simulations_sui_21m)
-
-colors <- rainbow(21)
+original_plot <- ggplot(DF_simulations_sui, aes(x = Equilibrium)) +
+  geom_density(fill = "grey", alpha = 0.5) +
+  labs(title = "Original",
+       x = NULL,  
+       y = NULL) +  
+  theme(
+    panel.background = element_rect(fill = "white"),
+    panel.grid.major = element_line(color = "grey", linetype = "dashed"),
+    panel.grid.minor = element_line(color = "grey", linetype = "dashed"),
+    text = element_text(size = 7, family = "serif"),
+    plot.title = element_text(family = "serif", size = 8, hjust = 0.5)
+  )
 
 plot_list <- list()
-
-for (i in seq_along(df_list)) {
-  plot <- ggplot(df_list[[i]], aes(x = Equilibrium)) +
-    geom_density(fill = colors[i], alpha = 0.5) +
-    geom_density(data = DF_simulations_sui, aes(x = Equilibrium), fill = "grey", alpha = 0.5) +
-    labs(title = paste("Item", i),
-         x = "",
-         y = "") +
-    theme(panel.background = element_rect(fill = "white"),
-          panel.grid.major = element_line(color = "grey", linetype = "dashed"),
-          panel.grid.minor = element_line(color = "grey", linetype = "dashed"),
-          text = element_text(size = 7, family = "serif")) +
-    theme(plot.title = element_text(family = "serif", size = 8, hjust = 0.5))
+colors <- rainbow(21)
+for (i in 1:21) {
+  df_name_manipulated <- paste0("DF_simulations_sui_", i, "m")
   
-  plot_list[[i]] <- plot
+  DF_manipulated <- get(df_name_manipulated)
+  
+  current_plot <- ggplot(DF_manipulated, aes(x = Equilibrium)) +
+    geom_density(fill = colors[i], alpha = 0.5) +
+    geom_density(data = DF_simulations_sui, fill = "grey", alpha = 0.5) +
+    labs(title = paste("Item", i),
+         x = NULL,  
+         y = NULL) +  
+    theme(
+      panel.background = element_rect(fill = "white"),
+      panel.grid.major = element_line(color = "grey", linetype = "dashed"),
+      panel.grid.minor = element_line(color = "grey", linetype = "dashed"),
+      text = element_text(size = 7, family = "serif"),
+      plot.title = element_text(family = "serif", size = 8, hjust = 0.5)
+    )
+  
+  plot_list[[i]] <- current_plot
 }
 
-plot_list
+grid.arrange(original_plot, grobs = plot_list, ncol = 7)
+
+pdf("Sui_data_output/Figures/Sui_simulation_equilibrium_density.pdf", width=8.75, height=5.45)
+grid.arrange(grobs = plot_list, ncol = 7)
+dev.off()
 ```
 
 ```{r S simulations INDIVIDUAL manipulations total}
@@ -1060,283 +1075,75 @@ as.data.frame(paired_t$desc)
 
 ```{r S individual manipulation simulation plots}
 ## plots at equilibrium ## 
-EQ_1m <- ggplot(DF_simulations_sui_1m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 1", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_1m
 
-EQ_2m <- ggplot(DF_simulations_sui_2m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 2", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_2m
+plot_list <- list()
 
-EQ_3m <- ggplot(DF_simulations_sui_3m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 3", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_3m
+for (i in 1:21) {
+  df_name_manipulated <- paste0("DF_simulations_sui_", i, "m")
+  DF_manipulated <- transform(get(df_name_manipulated), Type = "Manipulated")
+  
+  current_plot <- ggplot(DF_manipulated, aes(x = Timepoints, y = Equilibrium)) +
+    geom_line(color = "black") +  
+    theme_classic() +
+    labs(title = paste("Item", i), 
+         x = NULL,  
+         y = NULL) +  
+    theme(
+      plot.title = element_text(family = "serif", size = 8, hjust = 0.5),
+      axis.title = element_blank(),  
+      axis.text = element_text(family = "serif", size = 6),
+      legend.position = "none"  
+    ) +
+    scale_x_continuous(breaks = c(0, 10000, 20000))
 
-EQ_4m <- ggplot(DF_simulations_sui_4m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 4", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_4m
+  plot_list[[i]] <- current_plot
+}
 
-EQ_5m <- ggplot(DF_simulations_sui_5m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 5", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_5m
+grid.arrange(grobs = plot_list, ncol = 7)
+```
 
-EQ_6m <- ggplot(DF_simulations_sui_6m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 6", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_6m
+```{r S overlap original and manipulated (individual) equilibrium plots}
 
-EQ_7m <- ggplot(DF_simulations_sui_7m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 7", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_7m
+DF_simulations_sui_ori <- DF_simulations_sui[, c("Timepoints", "Equilibrium")] # original equilibrium for suicide group (remove perturbations colmn to match the manipulated equilibrium dataframe)
 
-EQ_8m <- ggplot(DF_simulations_sui_8m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 8", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_8m
+plot_list <- list()
 
-EQ_9m <- ggplot(DF_simulations_sui_9m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 9", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_9m
+for (i in 1:21) {
+  df_name_ori <- "DF_simulations_sui_ori"
+  df_name_manipulated <- paste0("DF_simulations_sui_", i, "m")
+  
+  DF_combined <- rbind(
+    transform(get(df_name_ori), Type = "Original"),
+    transform(get(df_name_manipulated), Type = "Manipulated")
+  )
+  
+  current_plot <- ggplot(DF_combined, aes(x = Timepoints, y = Equilibrium, color = Type)) +
+    geom_line() +
+    scale_color_manual(values = c("#CC99FF", "#663399")) +  
+    theme_classic() +
+    labs(title = paste("Item", i), 
+         x = NULL, 
+         y = NULL) +  
+    theme(
+      plot.title = element_text(family = "serif", size = 10, hjust = 0.5),
+      axis.title = element_blank(),  
+      axis.text = element_text(family = "serif", size = 8),
+      legend.position = "none"  
+    ) +
+    scale_x_continuous(breaks = c(0, 10000, 20000))
+  
+  plot_list[[i]] <- current_plot
+}
 
-EQ_10m <- ggplot(DF_simulations_sui_10m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 10", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_10m
+#grid.arrange(grobs = plot_list, ncol = 7)
 
-EQ_11m <- ggplot(DF_simulations_sui_11m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 11", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_11m
+#pdf("Sui_data_output/Figures/Sui_simulation_equilibrium_plots.pdf", width=8.37, height=5.17)
+#grid.arrange(grobs = plot_list, ncol = 7)
+#dev.off()
 
-EQ_12m <- ggplot(DF_simulations_sui_12m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 12", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_12m
-
-EQ_13m <- ggplot(DF_simulations_sui_13m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 13", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_13m
-
-EQ_14m <- ggplot(DF_simulations_sui_14m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 14", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_14m
-
-EQ_15m <- ggplot(DF_simulations_sui_15m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 15", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_15m
-
-EQ_16m <- ggplot(DF_simulations_sui_16m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 16", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_16m
-
-EQ_17m <- ggplot(DF_simulations_sui_17m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 17", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_17m
-
-EQ_18m <- ggplot(DF_simulations_sui_18m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 18", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_18m
-
-EQ_19m <- ggplot(DF_simulations_sui_19m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 19", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_19m
-
-EQ_20m <- ggplot(DF_simulations_sui_20m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 20", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_20m
-
-EQ_21m <- ggplot(DF_simulations_sui_21m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 21", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_21m
-
-plots <- list(EQ_1m, EQ_2m, EQ_3m, EQ_4m, EQ_5m, EQ_6m, EQ_7m, EQ_8m, EQ_9m, EQ_10m, EQ_11m, EQ_12m, EQ_13m, EQ_14m, EQ_15m, EQ_16m, EQ_17m, EQ_18m, EQ_19m, EQ_20m, EQ_21m)
-
-plots
-
+pdf("Sui_data_output/Figures/Sui_simulation_equilibrium_ind_plots.pdf", width=8.37, height=5.17) # all time points
+plot_list
+dev.off()
 ```
 
 ```{r S individual manipulations system activity preferences}
@@ -2403,7 +2210,51 @@ table_desc_no_sui <- merge(data_means_sds, data_summary, by = "Item")
 print(table_desc_no_sui)
 
 # write.csv(table_desc_no_sui, 'table_descriptives_item_manip_no_sui.xlsx')
+
+original_plot <- ggplot(DF_simulations_no_sui, aes(x = Equilibrium)) +
+  geom_density(fill = "grey", alpha = 0.5) +
+  labs(title = "Original",
+       x = NULL,  
+       y = NULL) +  
+  theme(
+    panel.background = element_rect(fill = "white"),
+    panel.grid.major = element_line(color = "grey", linetype = "dashed"),
+    panel.grid.minor = element_line(color = "grey", linetype = "dashed"),
+    text = element_text(size = 7, family = "serif"),
+    plot.title = element_text(family = "serif", size = 8, hjust = 0.5)
+  )
+
+plot_list <- list()
+colors <- rainbow(21)
+for (i in 1:21) {
+  df_name_manipulated <- paste0("DF_simulations_no_sui_", i, "m")
+  
+  DF_manipulated <- get(df_name_manipulated)
+  
+  current_plot <- ggplot(DF_manipulated, aes(x = Equilibrium)) +
+    geom_density(fill = colors[i], alpha = 0.5) +
+    geom_density(data = DF_simulations_no_sui, fill = "grey", alpha = 0.5) +
+    labs(title = paste("Item", i),
+         x = NULL,  
+         y = NULL) +  
+    theme(
+      panel.background = element_rect(fill = "white"),
+      panel.grid.major = element_line(color = "grey", linetype = "dashed"),
+      panel.grid.minor = element_line(color = "grey", linetype = "dashed"),
+      text = element_text(size = 7, family = "serif"),
+      plot.title = element_text(family = "serif", size = 8, hjust = 0.5)
+    )
+  
+  plot_list[[i]] <- current_plot
+}
+
+grid.arrange(original_plot, grobs = plot_list, ncol = 7)
+
+pdf("No_sui_data_output/Figures/No_sui_simulation_equilibrium_density.pdf", width=8.75, height=5.45)
+grid.arrange(grobs = plot_list, ncol = 7)
+dev.off()
 ```
+
 ```{r NS simulations INDIVIDUAL manipulations total}
 
 get_variable_totals <- function(df) {
@@ -2464,282 +2315,74 @@ write.csv(total_manipulated_ns, 'No_sui_data_output/DF_no_sui_equilibrium_manipu
 
 ```{r NS individual manipulation simulation plots}
 ## plots at equilibrium ## 
-EQ_ns_1m <- ggplot(DF_simulations_no_sui_1m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 1", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_1m 
 
-EQ_ns_2m <- ggplot(DF_simulations_no_sui_2m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 2", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_2m
+plot_list <- list()
 
-EQ_ns_3m <- ggplot(DF_simulations_no_sui_3m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 3", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_3m
+for (i in 1:21) {
+  df_name_manipulated <- paste0("DF_simulations_no_sui_", i, "m")
+  DF_manipulated <- transform(get(df_name_manipulated), Type = "Manipulated")
+  
+  current_plot <- ggplot(DF_manipulated, aes(x = Timepoints, y = Equilibrium)) +
+    geom_line(color = "black") +  
+    theme_classic() +
+    labs(title = paste("Item", i), 
+         x = NULL,  
+         y = NULL) +  
+    theme(
+      plot.title = element_text(family = "serif", size = 8, hjust = 0.5),
+      axis.title = element_blank(),  
+      axis.text = element_text(family = "serif", size = 6),
+      legend.position = "none"  
+    ) +
+    scale_x_continuous(breaks = c(0, 10000, 20000))
 
-EQ_ns_4m <- ggplot(DF_simulations_no_sui_4m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 4", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_4m
+  plot_list[[i]] <- current_plot
+}
 
-EQ_ns_5m <- ggplot(DF_simulations_no_sui_5m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 5", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_5m
+grid.arrange(grobs = plot_list, ncol = 7)
+```
+```{r NS overlap original and manipulated (individual) equilibrium plots}
 
-EQ_ns_6m <- ggplot(DF_simulations_no_sui_6m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 6", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_6m
+DF_simulations_no_sui_ori <- DF_simulations_no_sui[, c("Timepoints", "Equilibrium")] # original equilibrium for non-suicide group (remove perturbations colmn to match the manipulated equilibrium dataframe)
 
-EQ_ns_7m <- ggplot(DF_simulations_no_sui_7m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 7", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_7m
+plot_list <- list()
 
-EQ_ns_8m <- ggplot(DF_simulations_no_sui_8m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 8", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_8m
+for (i in 1:21) {
+  df_name_ori <- "DF_simulations_no_sui_ori"
+  df_name_manipulated <- paste0("DF_simulations_no_sui_", i, "m")
+  
+  DF_combined <- rbind(
+    transform(get(df_name_ori), Type = "Original"),
+    transform(get(df_name_manipulated), Type = "Manipulated")
+  )
+  
+  current_plot <- ggplot(DF_combined, aes(x = Timepoints, y = Equilibrium, color = Type)) +
+    geom_line() +
+    scale_color_manual(values = c("#00CCFF", "#3300FF")) +  
+    theme_classic() +
+    labs(title = paste("Item", i), 
+         x = NULL, 
+         y = NULL) +  
+    theme(
+      plot.title = element_text(family = "serif", size = 10, hjust = 0.5),
+      axis.title = element_blank(),  
+      axis.text = element_text(family = "serif", size = 8),
+      legend.position = "none"  
+    ) +
+    scale_x_continuous(breaks = c(0, 10000, 20000))
+  
+  plot_list[[i]] <- current_plot
+}
 
-EQ_ns_9m <- ggplot(DF_simulations_no_sui_9m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 9", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_9m
+grid.arrange(grobs = plot_list, ncol = 7)
 
-EQ_ns_10m <- ggplot(DF_simulations_no_sui_10m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 10", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_10m
+pdf("No_sui_data_output/Figures/No_sui_simulation_equilibrium_plots.pdf", width=8.37, height=5.17)
+grid.arrange(grobs = plot_list, ncol = 7)
+dev.off()
 
-EQ_ns_11m <- ggplot(DF_simulations_no_sui_11m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 11", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_11m
-
-EQ_ns_12m <- ggplot(DF_simulations_no_sui_12m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 12", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_12m
-
-EQ_ns_13m <- ggplot(DF_simulations_no_sui_13m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 13", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_13m
-
-EQ_ns_14m <- ggplot(DF_simulations_no_sui_14m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 14", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_14m
-
-EQ_ns_15m <- ggplot(DF_simulations_no_sui_15m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 15", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_15m
-
-EQ_ns_16m <- ggplot(DF_simulations_no_sui_16m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 16", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_16m
-
-EQ_ns_17m <- ggplot(DF_simulations_no_sui_17m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 17", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_17m
-
-EQ_ns_18m <- ggplot(DF_simulations_no_sui_18m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 18", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_18m
-
-EQ_ns_19m <- ggplot(DF_simulations_no_sui_19m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 19", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_19m
-
-EQ_ns_20m <- ggplot(DF_simulations_no_sui_20m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 20", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_20m
-
-EQ_ns_21m <- ggplot(DF_simulations_no_sui_21m, 
-       aes(x = Timepoints, y = Equilibrium)) + 
-  geom_line() +
-  theme_classic() +
-  labs(title = "Item 21", 
-       x = "",
-       y = expression(paste(""))) +
-  theme(
-    plot.title = element_text(family = "serif",size = 8 , hjust = 0.5),
-    axis.title = element_text(family = "serif",size = 6,  ),
-    axis.text = element_text(family = "serif",size = 6)) +   scale_x_continuous(breaks = c(0, 10000, 20000)) 
-EQ_ns_21m
-
-plots <- list(EQ_ns_1m, EQ_ns_2m, EQ_ns_3m, EQ_ns_4m, EQ_ns_5m, EQ_ns_6m, EQ_ns_7m, EQ_ns_8m, EQ_ns_9m, EQ_ns_10m, EQ_ns_11m, EQ_ns_12m, EQ_ns_13m, EQ_ns_14m, EQ_ns_15m, EQ_ns_16m, EQ_ns_17m, EQ_ns_18m, EQ_ns_19m, EQ_ns_20m, EQ_ns_21m)
-
-plots
+pdf("No_sui_data_output/Figures/No_sui_simulation_equilibrium_ind_plots.pdf", width=8.37, height=5.17) # all time points
+plot_list
+dev.off()
 ```
 
 ```{r NS individual manipulations system activity preferences}
@@ -3022,10 +2665,17 @@ LCT_recovery_no_sui
 
 ### Both groups
 
-```{r Glauber dynamics equilibrium  totals sui and no sui}
+```{r B Glauber dynamics equilibrium  totals sui and no sui}
 
-totals_no_sui <- colSums(Equilibrium_no_sui) # total occurrences for each symptom non-suicide group
-totals_sui <- colSums(Equilibrium_sui) # total occurrences for each symptom in suicide group
+totals_no_sui_ <- colSums(Equilibrium_no_sui) # total occurrences for each symptom non-suicide group
+totals_no_sui <- get_variable_totals(Equilibrium_no_sui)
+
+
+totals_sui_ <- colSums(Equilibrium_sui) # total occurrences for each symptom in suicide group
+totals_sui <- get_variable_totals(Equilibrium_sui)
+
+totals_sui_
+totals_sui
 
 df_totals_equil <- data.frame(
   Symptom = paste("R", seq_along(totals_no_sui), sep = ""),
@@ -3124,3 +2774,171 @@ effect_sizes_CIs <- c(
 print(effect_sizes_CIs)
 ```
 
+```{r B Overlap original and manipulated (individual) equilibrium plots}
+custom_colors <- c("#00CCFF", "#3300FF", "#663399", "#CC99FF")
+
+plot_list <- list()
+
+max_time_points <- 6000 # change based on visual ease
+
+for (i in 1:21) {
+  df_name_ori <- "DF_simulations_sui_ori"
+  df_name_sui <- paste0("DF_simulations_sui_", i, "m")
+  df_name_no_sui <- paste0("DF_simulations_no_sui_", i, "m")
+  df_name_no_sui_ori <- "DF_simulations_no_sui_ori"
+  
+  combined_df <- rbind( # all scenarios
+    transform(get(df_name_ori), Type = paste("Original")),
+    transform(get(df_name_sui), Type = paste("Sui_", i, "m")),
+    transform(get(df_name_no_sui), Type = paste("No_Sui_", i, "m")),
+    transform(get(df_name_no_sui_ori), Type = paste("No_Sui_Original"))
+  )
+  
+  current_plot <- ggplot(combined_df, aes(x = Timepoints, y = Equilibrium, color = Type)) +
+    geom_line() +
+    scale_color_manual(values = custom_colors) +  
+    theme_classic() +
+    labs(title = paste("Item", i),
+         x = NULL,  
+         y = NULL) +  
+    theme(
+      plot.title = element_text(family = "serif", size = 12, hjust = 0.5),
+      axis.title = element_blank(), 
+      axis.text = element_text(family = "serif", size = 10),
+      legend.position = "none"  
+    ) +
+    scale_x_continuous(breaks = c(0, 10000, 20000), limits = c(0, max_time_points))
+  
+  plot_list[[i]] <- current_plot
+}
+
+grid.arrange(grobs = plot_list, ncol = 7)
+
+pdf("Both_sui_data_output/Figures/Both_simulation_equilibrium_plots.pdf", width=8.37, height=5.17)
+grid.arrange(grobs = plot_list, ncol = 7)
+dev.off()
+
+pdf("Both_sui_data_output/Figures/Both_simulation_equilibrium_ind_plots.pdf", width=8.37, height=5.17) # all time points
+plot_list
+dev.off()
+```
+
+
+```{r B Overlap original and manipulated (individual) equilibrium boxplots}
+pdf("Both_sui_data_output/Figures/Both_simulation_equilibrium_ind_boxplots.pdf", width=8.37, height=5.17) 
+
+colors <- c("#00CCFF", "#CC99FF", "#3300FF", "#663399")
+
+for (i in 1:21) {
+
+  my_data_frames <- list()
+
+  for (j in c("m_ns", "m_s")) {
+    
+    df_name <- paste0("total_", i, j)
+
+    if (exists(df_name)) {
+
+      my_data_frames[[df_name]] <- get(df_name)
+      my_data_frames[[df_name]]$Scenario <- df_name
+    }
+  }
+
+  for (additional_scenario in c("totals_sui", "totals_no_sui")) {
+    
+    df_name <- paste0(additional_scenario)
+
+    if (exists(df_name)) {
+     
+      my_data_frames[[df_name]] <- get(df_name)
+      my_data_frames[[df_name]]$Scenario <- df_name
+    }
+  }
+
+  combined_df <- do.call(rbind, my_data_frames)
+
+  plot_title <- paste("Item", i)
+  p <- ggplot(combined_df, aes(x = factor(Scenario), y = count, fill = Scenario)) +
+    geom_boxplot() +
+    labs(title = plot_title,
+         x = NULL,  
+         y = NULL) + 
+    scale_fill_manual(values = colors) +  
+    scale_x_discrete(labels = setNames(c("S total", "NS total", paste0("S ", i, " total"), paste0("NS ", i, " total")),
+                                      c("totals_sui", "totals_no_sui", paste0("total_", i, "m_s"), paste0("total_", i, "m_ns")))) +  
+    theme_minimal() +
+    theme(
+      plot.title = element_text(family = "serif", size = 10, hjust = 0.5),
+      axis.title = element_blank(), 
+      axis.text = element_text(family = "serif", size = 8),
+      legend.position = "none"
+    )
+  
+  print(p)
+}
+
+dev.off()
+
+## all in one ##
+plot_list <- list()
+
+for (i in 1:21) {
+
+  my_data_frames <- list()
+
+  for (j in c("m_ns", "m_s")) {
+    
+    df_name <- paste0("total_", i, j)
+
+    if (exists(df_name)) {
+
+      my_data_frames[[df_name]] <- get(df_name)
+      my_data_frames[[df_name]]$Scenario <- df_name
+    }
+  }
+
+  for (additional_scenario in c("totals_sui", "totals_no_sui")) {
+    
+    df_name <- paste0(additional_scenario)
+
+    if (exists(df_name)) {
+     
+      my_data_frames[[df_name]] <- get(df_name)
+      my_data_frames[[df_name]]$Scenario <- df_name
+    }
+  }
+
+  combined_df <- do.call(rbind, my_data_frames)
+
+  plot_title <- paste("Item", i)
+  
+  # Define custom labels inside the loop
+  custom_labels <- setNames(c("S total", "NS total", paste0("S ", i, " total"), paste0("NS ", i, " total")),
+                            c("totals_sui", "totals_no_sui", paste0("total_", i, "m_s"), paste0("total_", i, "m_ns")))
+
+  p <- ggplot(combined_df, aes(x = factor(Scenario), y = count, fill = Scenario)) +
+    geom_boxplot() +
+    labs(title = plot_title,
+         x = NULL,  
+         y = NULL) + 
+    scale_fill_manual(values = colors) +  
+    scale_x_discrete(labels = custom_labels) +  
+    theme_minimal() +
+    theme(
+      plot.title = element_text(family = "serif", size = 8, hjust = 0.5),
+      axis.title = element_blank(), 
+      axis.text = element_text(family = "serif", size = 6),
+      axis.text.x = element_blank(),  
+      axis.text.y = element_blank(), 
+      legend.position = "none"
+    )
+  
+  plot_list[[i]] <- p
+}
+
+grid.arrange(grobs = plot_list, ncol = 7)
+
+pdf("Both_sui_data_output/Figures/Both_simulation_equilibrium_boxplots.pdf", width=8.37, height=5.17) 
+grid.arrange(grobs = plot_list, ncol = 7)
+dev.off()
+```
