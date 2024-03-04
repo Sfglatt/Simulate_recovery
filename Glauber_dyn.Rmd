@@ -9,6 +9,23 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r Glauber dynamics spin flip}
+
+extract_spin_flips <- function(binary_data) {
+  Ntime <- nrow(binary_data)
+  num_spin_flips <- numeric(Ntime)
+
+  for (j in 2:Ntime) {
+    flipped_nodes <- sum(binary_data[j, ] != binary_data[j - 1, ])
+    num_spin_flips[j] <- flipped_nodes
+  }
+
+  result <- data.frame(NumSpinFlips = num_spin_flips)
+  return(list(result))
+}
+
+```
+
 ```{r Glauber dynamics function 1 state}
 
 # This function simulates data at equilibrium with Glauber dynamics.
