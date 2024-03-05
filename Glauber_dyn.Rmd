@@ -187,3 +187,111 @@ Glauber_2 <- function(connectivity,
 }
 ```
 
+```{r Glauber dynamics function 2 states and spec nodes}
+
+# for the glauber dynamics function, we need:
+# thresholds, which will be derived from Ising model
+# connectivity = adjacency matrix which will be derived from the Ising model
+# Ntime = number of timepoints to simulate using glauber dynamics. change in the functions use
+# beta = beta parameter Hamiltonian.
+# Hamiltonian energy measure, which is defined as function(x,m,w) { - (((t(x)%*%w%*%x)/2) + (t(x)%*%m)) }
+# nodes_to_perturb -- input which nodes the perturbation should be applied too (versus the above, which is applied to all)
+
+##this is the same thing as Glauber_2, with the exception of specifying which nodes to perturb. If you choose to perturb all nodes, you will get the same results as the Glauber_2 function.
+
+Glauber_2b <- function(connectivity,
+                     thresholds,
+                     Ntime = 5000,
+                     beta = 1,
+                     divider = 1000,
+                     perturbation = TRUE,
+                     intervention = "negative",
+                     nodes_to_perturb = c(1, 3, 5)) {
+  Nvar = length(thresholds)
+
+  ## transform ##
+  vector.one <- matrix(1, Nvar, 1)
+  transformed.thresholds <- 0.5 * thresholds + 0.25 * connectivity %*% vector.one
+  transformed.connectivity <- 0.25 * connectivity
+
+  ## Hamiltonian ##
+  ham <- function(x, m, w) {
+    -(((t(x) %*% w %*% x) / 2) + (t(x) %*% m))
+  }
+
+  output.dat_eq <- matrix(0, Ntime, Nvar)
+  output.binary_eq <- matrix(0, Ntime, Nvar)
+
+  startvalue <- sample(c(-1, 1), Nvar, T)
+  x = startvalue     # start vector
+
+  for (j in 1:Ntime) {
+    i = sample(1:Nvar, size = 1)       # Sample which node is going to be flipped
+    x2 = x
+    x2[i] = x2[i] * -1               # Flip the node
+    p <- 1 / (1 + exp(beta * (ham(x2, transformed.thresholds, transformed.connectivity) -
+                              ham(x, transformed.thresholds, transformed.connectivity))))
+    if (runif(1) < p) x = x2          # update state
+    output.dat_eq[j,] = x
+  }
+
+  ## transform data back ##
+  output.binary_eq <<- 0.5 + 0.5 * output.dat_eq
+
+  if (perturbation == "TRUE") {
+
+    if (intervention == "negative") {
+
+      output.dat_pert <- matrix(0, Ntime, Nvar)
+
+      x = startvalue
+
+      for (j in 1:Ntime) {
+        if (j %% divider == 0 & j != Ntime) {
+          # nodes to perturb 
+          x[nodes_to_perturb] = 1
+          output.dat_pert[j,] = x
+        } else {
+          i = sample(1:Nvar, size = 1)
+          x2 = x
+          x2[i] = x2[i] * -1
+          p <- 1 / (1 + exp(beta * (ham(x2, transformed.thresholds, transformed.connectivity) -
+                                    ham(x, transformed.thresholds, transformed.connectivity))))
+          if (runif(1) < p) x = x2
+          output.dat_pert[j,] = x
+        }
+      }
+
+      # Transform data back
+      output.binary_pert <<- 0.5 + 0.5 * output.dat_pert
+
+    } else if (intervention == "positive") {
+
+      output.dat_pert <- matrix(0, Ntime, Nvar)
+
+      x = startvalue
+
+      for (j in 1:Ntime) {
+        if (j %% divider == 0 & j != Ntime) {
+          # nodes to perturb 
+          x[nodes_to_perturb] = -1
+          output.dat_pert[j,] = x
+        } else {
+          i = sample(1:Nvar, size = 1)
+          x2 = x
+          x2[i] = x2[i] * -1
+          p <- 1 / (1 + exp(beta * (ham(x2, transformed.thresholds, transformed.connectivity) -
+                                    ham(x, transformed.thresholds, transformed.connectivity))))
+          if (runif(1) < p) x = x2
+          output.dat_pert[j,] = x
+        }
+      }
+
+      # Transform data back
+      output.binary_pert <<- 0.5 + 0.5 * output.dat_pert
+
+    }
+  }
+}
+
+```
