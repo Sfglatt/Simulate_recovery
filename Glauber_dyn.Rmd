@@ -2,7 +2,9 @@
 title: "Glauber_dyn"
 author: "Sglatt"
 date: "`r Sys.Date()`"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -197,16 +199,19 @@ Glauber_2 <- function(connectivity,
 # Hamiltonian energy measure, which is defined as function(x,m,w) { - (((t(x)%*%w%*%x)/2) + (t(x)%*%m)) }
 # nodes_to_perturb -- input which nodes the perturbation should be applied too (versus the above, which is applied to all)
 
-##this is the same thing as Glauber_2, with the exception of specifying which nodes to perturb. If you choose to perturb all nodes, you will get the same results as the Glauber_2 function.
+##this is the same thing as Glauber_2, with the exception of specifying which nodes to perturb. If you choose to perturb all nodes, you will get the same results as the Glauber_2 function (confirmed)
 
 Glauber_2b <- function(connectivity,
-                     thresholds,
-                     Ntime = 5000,
-                     beta = 1,
-                     divider = 1000,
-                     perturbation = TRUE,
-                     intervention = "negative",
-                     nodes_to_perturb = c(1, 3, 5)) {
+                       thresholds,
+                       Ntime = 5000,
+                       beta = 1,
+                       divider = 1000,
+                       perturbation = TRUE,
+                       intervention = "negative",
+                       nodes_to_perturb = c(1, 3, 5)) { # negative = momentary activation of all nodes
+                                                        # positive = momentary deactivation of all nodes
+                                                        # fixed simulations. Do all nodes for standard 'all'
+  
   Nvar = length(thresholds)
 
   ## transform ##
