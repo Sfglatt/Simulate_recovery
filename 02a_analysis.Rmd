@@ -1,0 +1,621 @@
+---
+title: "02a_analysis"
+author: "Sglatt"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r Packages}
+if (!require("bootnet")) {install.packages("bootnet"); require("bootnet")}
+if (!require("cowplot")) {install.packages("cowplot"); require("cowplot")}
+if (!require("dplyr")) {install.packages("dplyr"); require("dplyr")}
+if (!require("effectsize")) {install.packages("effectsize"); require("effectsize")} 
+if (!require("EGAnet")) {install.packages("EGAnet"); require("EGAnet")} 
+if (!require("ggplot2")) {install.packages("ggplot2"); require("ggplot2")}
+if (!require("ggpubr")) {install.packages("ggpubr"); require("ggpubr")}
+if (!require("ggridges")) {install.packages("ggridges"); require("ggridges")}
+if (!require("gridExtra")) {install.packages("gridExtra"); require("gridExtra")}
+if (!require("IsingFit")) {install.packages("IsingFit"); require("IsingFit")}
+if (!require("Isinglandr")) {install.packages("Isinglandr"); require("Isinglandr")}
+if (!require("knitr")) {install.packages("knitr"); require("knitr")}
+if (!require("lsr")) {install.packages("lsr"); require("lsr")}
+if (!require("psych")) {install.packages("psych"); require("psych")}
+if (!require("pwr")) {install.packages("pwr"); require("pwr")}
+if (!require("qgraph")) {install.packages("qgraph"); require("qgraph")}
+if (!require("RColorBrewer")) {install.packages("RColorBrewer"); require("RColorBrewer")} 
+if (!require("rcompanion")) {install.packages("rcompanion"); require("rcompanion")} 
+if (!require("readxl")) {install.packages("readxl"); require("readxl")}
+if (!require("reshape2")) {install.packages("reshape2"); require("reshape2")} 
+if (!require("remotes")) {install.packages("remotes"); require("remotes")}
+if (!require("Rmisc")) {install.packages("Rmisc"); require("Rmisc")}
+if (!require("rstatix")) {install.packages("rstatix"); require("rstatix")} 
+if (!require("sm")) {install.packages("sm"); require("sm")}
+if (!require("tidyverse")) {install.packages("tidyverse"); require("tidyverse")}
+if (!require("viridis")) {install.packages("viridis"); require("viridis")} 
+if (!require("writexl")) {install.packages("writexl"); require("writexl")} 
+```
+
+# Suicide group (current)
+```{r S Data}
+RESST_sim_sui_di <- read.csv("Created_data/RESST_sim_sui_2024-12-28.csv")
+
+RESST_sui_binary <- RESST_sim_sui_di %>%
+  dplyr::select(R1:R21)
+
+nodeNames = c("R1_di","R2_di", "R3_di","R4_di", "R5_di", "R6_di","R7_di",
+              "R8_di", "R9_di","R10_di", "R11_di","R12_di","R13_di","R14_di",
+              "R15_di","R16_di", "R17_di", "R18_di","R19_di", "R20_di", "R21_di")
+```
+
+```{r S structure test}
+LCT_recovery_sui <- LCT(
+  RESST_sui_binary,
+  corr = "auto", # tetrachoric (binary)
+  model = "glasso",
+  algorithm = "walktrap",
+  uni.method = "Louvain", 
+  iter = 100, 
+  seed = 123456,
+  verbose = FALSE,
+)
+
+LCT_recovery_sui
+```
+
+```{r S Ising model}
+RESST_sui_binary_res <- IsingFit(RESST_sui_binary, plot = FALSE) 
+
+sim_sui_base_ising <- qgraph(RESST_sui_binary_res$weiadj,
+                     theme = "colorblind",
+                     nodeNames = nodeNames,
+                     label.norm = "OOO",
+                     legend = FALSE,
+                     border.width = as.numeric(abs(RESST_sui_binary_res$thresholds)*3),
+                     border.color = "purple") 
+# Node borders show the preference of the  node to be present/absent. > thickness shows lower likelihood to activate.
+
+# Extract connectivity and threshold objects 
+connectivity_resst_sui_sim = RESST_sui_binary_res$weiadj 
+thresholds_resst_sui_sim = RESST_sui_binary_res$thresholds 
+
+DF_ising_connectivities <- as.data.frame(connectivity_resst_sui_sim)
+DF_ising_thresholds <- as.data.frame(thresholds_resst_sui_sim)
+
+DF_ising_connectivities
+DF_ising_thresholds
+
+# Save Ising model + properties
+pdf(file = paste0("Created_data/02a_sui_data_output/Sim_sui_base_ising_", Sys.Date(), ".pdf"),
+    width = 10, height = 10)
+plot(sim_sui_base_ising)
+dev.off()
+
+png(file = paste0("Created_data/02a_sui_data_output/Sim_sui_base_ising_", Sys.Date(), ".png"))
+plot(sim_sui_base_ising)
+dev.off()
+
+write.csv(DF_ising_connectivities, 
+          file = paste0("Created_data/02a_sui_data_output/DF_sui_ising_connectivities_",
+                        Sys.Date(), ".csv"))
+
+save(DF_ising_connectivities, 
+     file = paste0("Created_data/02a_sui_data_output/DF_sui_ising_connectivities_",
+                        Sys.Date(), ".Rdata"))
+
+
+write.csv(DF_ising_connectivities, 
+          file = paste0("Created_data/02a_sui_data_output/DF_sui_ising_thresholds_",
+                        Sys.Date(), ".csv"))
+
+save(DF_ising_connectivities, 
+     file = paste0("Created_data/02a_sui_data_output/DF_sui_ising_thresholds_",
+                        Sys.Date(), ".Rdata"))
+```
+
+```{r S simulate equilibrium}
+Ntime = 20000
+
+set.seed(123456)
+
+Glauber_2(connectivity_resst_sui_sim, 
+          thresholds_resst_sui_sim, 
+          Ntime = 20000, 
+          beta = 1.5
+          # threshold - if you run the RI ver
+          )
+
+# Extract number of spin flips for each timepoint
+spin_flips_eq_sui <- extract_spin_flips(output.binary_eq) 
+
+# Extract raw equilibrium + perturbated time series
+Equilibrium_sui <- output.binary_eq 
+Pertubations_sui <- output.binary_pert
+
+# Descriptives (M, SD)
+stateEQ_sui <- mean(apply(Equilibrium_sui,1,sum))     # mean sum of active symptoms at equilibrium 
+statePERT_sui <- mean(apply(Pertubations_sui,1,sum))  # mean sum of active symptoms at with 
+
+stateEQ_sui_sd <- sd(apply(Equilibrium_sui,1,sum))    # sd of sum of active symptoms at equilibrium 
+statePERT_sui_sd <- sd(apply(Pertubations_sui,1,sum)) # sd of sum of active symptoms at with 
+
+# Dtaaframe with total active nodes at equilibrium and with perturbations 
+DF_simulations_sui <- data.frame(Timepoints = 1:Ntime,
+                                 Equilibrium = apply(Equilibrium_sui,1,sum),
+                                 Perturbations = apply(Pertubations_sui,1,sum)) 
+
+data.frame(DF_simulations_sui)
+summary(DF_simulations_sui) # look at median and interquartile range 
+ 
+# Look at close-ups for specific time periods; here I'm doing 1k-2k and 2k-3k
+DF_subset_1_2k <- subset(DF_simulations_sui, Timepoints >= 1000 & Timepoints <= 2000)
+summary(DF_subset_1_2k) 
+Pertubations_sui_1_2k <- Pertubations_sui[1000:2000, ]
+Pertubations_PERT_sui_1_2k_mean <- mean(apply(Pertubations_sui_1_2k,1,sum)) 
+Pertubations_PERT_sui_1_2k_sd <- sd(apply(Pertubations_sui_1_2k,1,sum)) 
+
+DF_subset_2_3k <- subset(DF_simulations_sui, Timepoints >= 2000 & Timepoints <= 3000)
+summary(DF_subset_2_3k) 
+Pertubations_sui_2_3k <- Pertubations_sui[2000:3000, ]
+Pertubations_PERT_sui_2_3k_mean <- mean(apply(Pertubations_sui_2_3k,1,sum)) 
+Pertubations_PERT_sui_2_3k_sd <- sd(apply(Pertubations_sui_2_3k,1,sum)) 
+
+# Save spin flips
+write.csv(spin_flips_eq_sui, 
+          file = paste0("Created_data/02a_sui_data_output/DF_sui_equilibrium_spin_flips_",
+                        Sys.Date(), ".csv"))
+
+# Save active node totals at equilibrium and with perturbations
+write.csv(DF_simulations_sui, 
+          file = paste0("Created_data/02a_sui_data_output/DF_sui_simulations_",
+                        Sys.Date(), ".csv"))
+
+# Save raw data at equilibrium (n = 20,000 for 21 variables)
+Equilibrium_sui <- as.data.frame(Equilibrium_sui)
+write.csv(Equilibrium_sui, 
+          file = paste0("Created_data/02a_sui_data_output/DF_sui_equilibrium_",
+                        Sys.Date(), ".csv"))
+
+# Save raw data with perturbations (n = 20,000 for 21 variables)
+Pertubations_sui <- as.data.frame(Pertubations_sui)
+write.csv(Pertubations_sui, 
+          file = paste0("Created_data/02a_sui_data_output/DF_sui_perturbations_",
+                        Sys.Date(), ".csv"))
+```
+
+```{r S simulate plots}
+# Plot density (active sum density) at equilibrium and with perturbation
+ggplot(data = DF_simulations_sui) + geom_density(aes(x=Equilibrium) , fill = "#00AFBB")
+ggplot(data = DF_simulations_sui) + geom_density(aes(x=Perturbations) , fill = "#00AFBB")
+
+# Overlay the above plots
+ggplot(data = DF_simulations_sui) +
+  geom_density(aes(x = Equilibrium, fill = "Equilibrium"), alpha = 0.5) +
+  geom_density(aes(x = Perturbations, fill = "Perturbations"), alpha = 0.5) +
+  scale_fill_manual(values = c("#838B8B", "#C1CDCD"), name = "") +
+  labs(title = "", 
+       x = "Active symptoms over 20,000 timepoints", 
+       y = "Density") +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(color = "grey", linetype = "dashed"),
+        panel.grid.minor = element_line(color = "grey", linetype = "dashed"),
+        text=element_text(size = 14,  family = "serif"))
+
+# Plot raw time-series at equilibrium
+ggplot(DF_simulations_sui, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "", 
+       x = "Time points",
+       y = expression(paste("RESST symptoms - FSA"))) +
+  theme(
+    plot.title = element_text(size = 14, face="bold", hjust = 0.5),
+    axis.title = element_text(size=12, face = "bold"),
+    axis.text = element_text(size = 12, face = "bold")) 
+
+# Plot raw time-series at equilibrium in histogram for density
+hist(DF_simulations_sui$Equilibrium,
+     col="black",
+     xlim=c(0,21),
+     breaks=seq(0,21),
+     main="",
+     xlab = expression(bold("Symptoms")),
+     ylab = expression(bold(paste("RESST symptoms - FSA"))))
+
+# Plot raw time-series with perturbations
+ggplot(DF_simulations_sui, aes(x = Timepoints, y = Perturbations)) + 
+  geom_line() +
+  theme_classic() +
+  geom_vline(xintercept = seq(from = 1000, to = Ntime -1, by=1000), color="pink", 
+             size=.7) +
+  labs(title = "", 
+       x = "Time points",
+       y = expression(paste("RESST symptoms - FSA"))) +
+  theme(
+    plot.title = element_text(size = 14, face="bold", hjust = 0.5),
+    axis.title = element_text(size=12, face = "bold"),
+    axis.text = element_text(size = 12, face = "bold")) 
+
+# plot perturbed time 2,000 - 3,000 (close up of full)
+ggplot(DF_simulations_sui, aes(x = Timepoints, y = Perturbations)) + 
+  geom_line() +
+  theme_classic() +
+  geom_vline(xintercept = seq(from = 1000, to = Ntime -1, by=1000), color="pink", 
+             size=.7) +
+  labs(title = "", 
+       x = "Time points",
+       y = expression(paste("RESST symptoms - FSA"))) +
+  theme(
+    plot.title = element_text(size = 14, face="bold", hjust = 0.5),
+    axis.title = element_text(size=12, face = "bold"),
+    axis.text = element_text(size = 12, face = "bold")) + scale_x_continuous(limits = c(2000, 3000))
+
+# plot perturbed time 1,000 - 2,000 (cloe up of full)
+ggplot(DF_simulations_sui, aes(x = Timepoints, y = Perturbations)) + 
+  geom_line() +
+  theme_classic() +
+  geom_vline(xintercept = seq(from = 1000, to = Ntime -1, by=1000), color="pink", 
+             size=.7) +
+  labs(title = "", 
+       x = "Time points",
+       y = expression(paste("RESST symptoms - FSA"))) +
+  theme(
+    plot.title = element_text(size = 14, face="bold", hjust = 0.5),
+    axis.title = element_text(size=12, face = "bold"),
+    axis.text = element_text(size = 12, face = "bold")) + scale_x_continuous(limits = c(1000, 2000))
+
+# Plot raw time-series with perturbations in histogram for density
+hist(DF_simulations_sui$Perturbations,
+     col="black",
+     xlim=c(0,21),
+     breaks=seq(0,21),
+     main="",
+     xlab = expression(bold("Symptoms")),
+     ylab = expression(bold(paste("RESST symptoms - FSA"))))
+```
+
+```{r S system activity preference}
+set.seed(123456)
+l1 <- make_2d_Isingland(thresholds = RESST_sui_binary_res$thresholds, 
+                        weiadj = RESST_sui_binary_res$weiadj, 
+                        beta = 1.5, 
+                        transform = TRUE)
+
+plot(l1)
+calculate_resilience(l1) # when the potential value is higher, the system is less stable and tends to move to a more stable state. 
+
+ggsave(file = paste0("Created_data/02a_sui_data_output/Sim_sui_activity_pref_", Sys.Date(), ".png"),
+       plot(l1) + autolayer(calculate_resilience(l1)), width = 8, height = 6)
+```
+
+# No suicide (former) group
+```{r NS Data}
+RESST_sim_no_sui_di <- read.csv("Created_data/RESST_sim_no_sui_2024-12-28.csv")
+
+RESST_no_sui_binary <- RESST_sim_no_sui_di %>%
+  dplyr::select(R1:R21)
+
+nodeNames = c("R1_di","R2_di", "R3_di","R4_di", "R5_di", "R6_di","R7_di",
+              "R8_di", "R9_di","R10_di", "R11_di","R12_di","R13_di","R14_di",
+              "R15_di","R16_di", "R17_di", "R18_di","R19_di", "R20_di", "R21_di")
+```
+
+```{r NS structure test}
+LCT_recovery_no_sui <- LCT(
+  RESST_no_sui_binary,
+  corr = "auto", # tetrachoric (binary)
+  model = "glasso",
+  algorithm = "walktrap",
+  uni.method = "Louvain", 
+  iter = 100, 
+  seed = 123456,
+  verbose = FALSE,
+)
+
+LCT_recovery_no_sui
+```
+
+```{r NS Ising model}
+RESST_no_sui_binary_res <- IsingFit(RESST_no_sui_binary, plot = FALSE) 
+
+sim_no_sui_base_ising <- qgraph(RESST_no_sui_binary_res$weiadj,
+                     theme = "colorblind",
+                     nodeNames = nodeNames,
+                     label.norm = "OOO",
+                     legend = FALSE,
+                     border.width = as.numeric(abs(RESST_no_sui_binary_res$thresholds)*3),
+                     border.color = "purple") 
+# Node borders show the preference of the  node to be present/absent. > thickness shows lower likelihood to activate.
+
+# Extract connectivity and threshold objects 
+connectivity_resst_no_sui_sim = RESST_no_sui_binary_res$weiadj 
+thresholds_resst_no_sui_sim = RESST_no_sui_binary_res$thresholds 
+
+DF_ising_connectivities <- as.data.frame(connectivity_resst_no_sui_sim)
+DF_ising_thresholds <- as.data.frame(thresholds_resst_no_sui_sim)
+
+DF_ising_connectivities
+DF_ising_thresholds
+
+# Save Ising model + properties
+pdf(file = paste0("Created_data/02a_no_sui_data_output/Sim_no_sui_base_ising_", Sys.Date(), ".pdf"),
+    width = 10, height = 10)
+plot(sim_no_sui_base_ising)
+dev.off()
+
+png(file = paste0("Created_data/02a_no_sui_data_output/Sim_no_sui_base_ising_", Sys.Date(), ".png"))
+plot(sim_no_sui_base_ising)
+dev.off()
+
+write.csv(DF_ising_connectivities, 
+          file = paste0("Created_data/02a_no_sui_data_output/DF_no_sui_ising_connectivities_",
+                        Sys.Date(), ".csv"))
+
+save(DF_ising_connectivities, 
+     file = paste0("Created_data/02a_no_sui_data_output/DF_no_sui_ising_connectivities_",
+                        Sys.Date(), ".Rdata"))
+
+
+write.csv(DF_ising_connectivities, 
+          file = paste0("Created_data/02a_no_sui_data_output/DF_no_sui_ising_thresholds_",
+                        Sys.Date(), ".csv"))
+
+save(DF_ising_connectivities, 
+     file = paste0("Created_data/02a_no_sui_data_output/DF_no_sui_ising_thresholds_",
+                        Sys.Date(), ".Rdata"))
+```
+
+```{r NS simulate equilibrium}
+Ntime = 20000
+
+set.seed(123456)
+
+Glauber_2(connectivity_resst_no_sui_sim, 
+          thresholds_resst_no_sui_sim, 
+          Ntime = 20000, 
+          beta = 1.5, 
+          intervention = "positive"
+          # threshold - if you run the RI ver
+          )
+
+# Extract number of spin flips for each timepoint
+spin_flips_eq_no_sui <- extract_spin_flips(output.binary_eq) 
+
+# Extract raw equilibrium + perturbated time series
+Equilibrium_no_sui <- output.binary_eq 
+Pertubations_no_sui <- output.binary_pert
+
+# Descriptives (M, SD)
+stateEQ_no_sui <- mean(apply(Equilibrium_no_sui,1,sum))     # mean sum of active symptoms at equilibrium 
+statePERT_no_sui <- mean(apply(Pertubations_no_sui,1,sum))  # mean sum of active symptoms at with 
+
+stateEQ_no_sui_sd <- sd(apply(Equilibrium_no_sui,1,sum))    # sd of sum of active symptoms at equilibrium 
+statePERT_no_sui_sd <- sd(apply(Pertubations_no_sui,1,sum)) # sd of sum of active symptoms at with 
+
+# Dtaaframe with total active nodes at equilibrium and with perturbations 
+DF_simulations_no_sui <- data.frame(Timepoints = 1:Ntime,
+                                 Equilibrium = apply(Equilibrium_no_sui,1,sum),
+                                 Perturbations = apply(Pertubations_no_sui,1,sum)) 
+
+data.frame(DF_simulations_no_sui)
+summary(DF_simulations_no_sui) # look at median and interquartile range 
+ 
+# Look at close-ups for specific time periods; here I'm doing 1k-2k and 2k-3k
+DF_subset_1_2k <- subset(DF_simulations_no_sui, Timepoints >= 1000 & Timepoints <= 2000)
+summary(DF_subset_1_2k) 
+Pertubations_no_sui_1_2k <- Pertubations_no_sui[1000:2000, ]
+Pertubations_PERT_no_sui_1_2k_mean <- mean(apply(Pertubations_no_sui_1_2k,1,sum)) 
+Pertubations_PERT_no_sui_1_2k_sd <- sd(apply(Pertubations_no_sui_1_2k,1,sum)) 
+
+DF_subset_2_3k <- subset(DF_simulations_no_sui, Timepoints >= 2000 & Timepoints <= 3000)
+summary(DF_subset_2_3k) 
+Pertubations_no_sui_2_3k <- Pertubations_no_sui[2000:3000, ]
+Pertubations_PERT_no_sui_2_3k_mean <- mean(apply(Pertubations_no_sui_2_3k,1,sum)) 
+Pertubations_PERT_no_sui_2_3k_sd <- sd(apply(Pertubations_no_sui_2_3k,1,sum)) 
+
+# Save spin flips
+write.csv(spin_flips_eq_no_sui, 
+          file = paste0("Created_data/02a_no_sui_data_output/DF_no_sui_equilibrium_spin_flips_",
+                        Sys.Date(), ".csv"))
+
+# Save active node totals at equilibrium and with perturbations
+write.csv(DF_simulations_no_sui, 
+          file = paste0("Created_data/02a_no_sui_data_output/DF_no_sui_simulations_",
+                        Sys.Date(), ".csv"))
+
+# Save raw data at equilibrium (n = 20,000 for 21 variables)
+Equilibrium_no_sui <- as.data.frame(Equilibrium_no_sui)
+write.csv(Equilibrium_no_sui, 
+          file = paste0("Created_data/02a_no_sui_data_output/DF_no_sui_equilibrium_",
+                        Sys.Date(), ".csv"))
+
+# Save raw data with perturbations (n = 20,000 for 21 variables)
+Pertubations_no_sui <- as.data.frame(Pertubations_no_sui)
+write.csv(Pertubations_no_sui, 
+          file = paste0("Created_data/02a_no_sui_data_output/DF_no_sui_perturbations_",
+                        Sys.Date(), ".csv"))
+```
+
+```{r NS simulate plots}
+# Plot density (active sum density) at equilibrium and with perturbation
+ggplot(data = DF_simulations_no_sui) + geom_density(aes(x=Equilibrium) , fill = "#00AFBB")
+ggplot(data = DF_simulations_no_sui) + geom_density(aes(x=Perturbations) , fill = "#00AFBB")
+
+# Overlay the above plots
+ggplot(data = DF_simulations_no_sui) +
+  geom_density(aes(x = Equilibrium, fill = "Equilibrium"), alpha = 0.5) +
+  geom_density(aes(x = Perturbations, fill = "Perturbations"), alpha = 0.5) +
+  scale_fill_manual(values = c("#838B8B", "#C1CDCD"), name = "") +
+  labs(title = "", 
+       x = "Active symptoms over 20,000 timepoints", 
+       y = "Density") +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(color = "grey", linetype = "dashed"),
+        panel.grid.minor = element_line(color = "grey", linetype = "dashed"),
+        text=element_text(size = 14,  family = "serif"))
+
+# Plot raw time-series at equilibrium
+ggplot(DF_simulations_no_sui, 
+       aes(x = Timepoints, y = Equilibrium)) + 
+  geom_line() +
+  theme_classic() +
+  labs(title = "", 
+       x = "Time points",
+       y = expression(paste("RESST symptoms - no FSA"))) +
+  theme(
+    plot.title = element_text(size = 14, face="bold", hjust = 0.5),
+    axis.title = element_text(size=12, face = "bold"),
+    axis.text = element_text(size = 12, face = "bold")) 
+
+# Plot raw time-series at equilibrium in histogram for density
+hist(DF_simulations_no_sui$Equilibrium,
+     col="black",
+     xlim=c(0,21),
+     breaks=seq(0,21),
+     main="",
+     xlab = expression(bold("Symptoms")),
+     ylab = expression(bold(paste("RESST symptoms - no FSA"))))
+
+# Plot raw time-series with perturbations
+ggplot(DF_simulations_no_sui, aes(x = Timepoints, y = Perturbations)) + 
+  geom_line() +
+  theme_classic() +
+  geom_vline(xintercept = seq(from = 1000, to = Ntime -1, by=1000), color="pink", 
+             size=.7) +
+  labs(title = "", 
+       x = "Time points",
+       y = expression(paste("RESST symptoms - no FSA"))) +
+  theme(
+    plot.title = element_text(size = 14, face="bold", hjust = 0.5),
+    axis.title = element_text(size=12, face = "bold"),
+    axis.text = element_text(size = 12, face = "bold")) 
+
+# plot perturbed time 2,000 - 3,000 (close up of full)
+ggplot(DF_simulations_no_sui, aes(x = Timepoints, y = Perturbations)) + 
+  geom_line() +
+  theme_classic() +
+  geom_vline(xintercept = seq(from = 1000, to = Ntime -1, by=1000), color="pink", 
+             size=.7) +
+  labs(title = "", 
+       x = "Time points",
+       y = expression(paste("RESST symptoms - no FSA"))) +
+  theme(
+    plot.title = element_text(size = 14, face="bold", hjust = 0.5),
+    axis.title = element_text(size=12, face = "bold"),
+    axis.text = element_text(size = 12, face = "bold")) + scale_x_continuous(limits = c(2000, 3000))
+
+# plot perturbed time 1,000 - 2,000 (cloe up of full)
+ggplot(DF_simulations_no_sui, aes(x = Timepoints, y = Perturbations)) + 
+  geom_line() +
+  theme_classic() +
+  geom_vline(xintercept = seq(from = 1000, to = Ntime -1, by=1000), color="pink", 
+             size=.7) +
+  labs(title = "", 
+       x = "Time points",
+       y = expression(paste("RESST symptoms - no FSA"))) +
+  theme(
+    plot.title = element_text(size = 14, face="bold", hjust = 0.5),
+    axis.title = element_text(size=12, face = "bold"),
+    axis.text = element_text(size = 12, face = "bold")) + scale_x_continuous(limits = c(1000, 2000))
+
+# Plot raw time-series with perturbations in histogram for density
+hist(DF_simulations_no_sui$Perturbations,
+     col="black",
+     xlim=c(0,21),
+     breaks=seq(0,21),
+     main="",
+     xlab = expression(bold("Symptoms")),
+     ylab = expression(bold(paste("RESST symptoms - no FSA"))))
+```
+
+```{r NS system activity preference}
+set.seed(123456)
+l1 <- make_2d_Isingland(thresholds = RESST_no_sui_binary_res$thresholds, 
+                        weiadj = RESST_no_sui_binary_res$weiadj, 
+                        beta = 1.5, 
+                        transform = TRUE)
+
+plot(l1)
+calculate_resilience(l1) # when the potential value is higher, the system is less stable and tends to move to a more stable state. 
+
+ggsave(file = paste0("Created_data/02a_no_sui_data_output/Sim_no_sui_activity_pref_", Sys.Date(), ".png"),
+       plot(l1) + autolayer(calculate_resilience(l1)), width = 8, height = 6)
+```
+
+# Between-group
+```{r occurrences}
+# Make dataframe with total occurrences in both groups and proportion of active times
+Equilibrium_no_sui <- as.data.frame(Equilibrium_no_sui)
+Equilibrium_sui <- as.data.frame(Equilibrium_sui)
+
+proportions_data <- data.frame(Item = character(0), 
+                               Proportion_No_Sui = numeric(),
+                               Proportion_Sui = numeric())
+
+for (item in paste0('V', 1:21)) {
+  
+  # proportions of symptom appearances for no suicide group
+  proportions_no_sui <- prop.table(table(Equilibrium_no_sui[[item]]))
+  
+  # proportions of symptom appearances for suicide group
+  proportions_sui <- prop.table(table(Equilibrium_sui[[item]]))
+  proportions_data <- rbind(proportions_data, data.frame(Item = item, Proportion_No_Sui = proportions_no_sui[2], Proportion_Sui = proportions_sui[2]))
+}
+
+proportions_data
+df_totals_equil
+
+write.csv(proportions_data, 
+          file = paste0("Created_data/02a_between_data_output/DF_proportion_active_",
+                        Sys.Date(), ".csv"))
+```
+
+```{r Plots}
+custom_colors <- c("#663399", "#3300FF")
+
+DF_simulations_sui_ori <- DF_simulations_sui[, c("Timepoints", "Equilibrium")]
+DF_simulations_no_sui_ori <- DF_simulations_no_sui[, c("Timepoints", "Equilibrium")]
+
+max_time_points <- 20000  
+
+combined_df <- rbind(
+  transform(DF_simulations_sui_ori, Type = "Sui_Original"),
+  transform(DF_simulations_no_sui_ori, Type = "No_Sui_Original")
+)
+
+overlayed_plot <- ggplot(combined_df, aes(x = Timepoints, y = Equilibrium, color = Type)) +
+  geom_line() +
+  scale_color_manual(values = custom_colors) +
+  theme_classic() +
+  labs(
+    title = "Equilibrium comparison",
+    x = "Time points",  
+    y = "Active symptoms"   
+  ) +
+  theme(
+    plot.title = element_text(family = "serif", size = 10, hjust = 0.5),
+    axis.title = element_blank(),
+    axis.text = element_text(family = "serif", size = 8),
+    legend.position = "none"  #
+  ) +
+  scale_x_continuous(
+    breaks = c(0, 10000, 20000), 
+    limits = c(0, max_time_points)
+  )
+
+overlayed_plot
+
+pdf(file = paste0("Created_data/02a_between_data_output/Equilibrium_", Sys.Date(), ".pdf"),
+    width = 10, height = 10)
+plot(overlayed_plot)
+dev.off()
+
+png(file = paste0("Created_data/02a_between_data_output/Equilibrium_", Sys.Date(), ".png"))
+plot(overlayed_plot)
+dev.off()
+```
+
